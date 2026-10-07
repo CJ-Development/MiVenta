@@ -444,10 +444,21 @@ DEFAULT_AUTO_FIELD = (
 
 
 # ============================================================
-# ALMACENAMIENTO DE ARCHIVOS (MEDIA)
+# ALMACENAMIENTO DE ARCHIVOS (VERCEL BLOB)
 # ============================================================
 
-BLOB_READ_WRITE_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
+BLOB_READ_WRITE_TOKEN = (
+    os.environ.get("BLOB_MIVENTA_READ_WRITE_TOKEN")
+    or os.environ.get("BLOB_READ_WRITE_TOKEN")
+)
+BLOB_STORE_ID = (
+    os.environ.get("BLOB_MIVENTA_STORE_ID")
+    or os.environ.get("BLOB_STORE_ID")
+)
+BLOB_WEBHOOK_PUBLIC_KEY = (
+    os.environ.get("BLOB_MIVENTA_WEBHOOK_PUBLIC_KEY")
+    or os.environ.get("BLOB_WEBHOOK_PUBLIC_KEY")
+)
 
 
 # ============================================================

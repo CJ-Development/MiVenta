@@ -278,11 +278,25 @@ class ProductoService:
 
     @staticmethod
     def _save_uploaded_file(uploaded_file):
-        # En producción (Vercel), solo usar Vercel Blob Storage
-        # El sistema de archivos es read-only en serverless
-        token = os.environ.get("BLOB_READ_WRITE_TOKEN")
+        # Token de Vercel Blob: soporta tanto el prefijo específico del store
+        # (BLOB_MIVENTA_READ_WRITE_TOKEN) como el genérico (BLOB_READ_WRITE_TOKEN)
+        token = (
+            os.environ.get("BLOB_MIVENTA_READ_WRITE_TOKEN")
+            or os.environ.get("BLOB_READ_WRITE_TOKEN")
+            or getattr(settings, "BLOB_READ_WRITE_TOKEN", None)
+        )
+
+        is_production = not settings.DEBUG or bool(os.environ.get("VERCEL"))
 
         if not token:
+            if is_production:
+                raise RuntimeError(
+                    "Error de configuración: no se encontró BLOB_MIVENTA_READ_WRITE_TOKEN "
+                    "ni BLOB_READ_WRITE_TOKEN en el entorno de producción. "
+                    "El almacenamiento local en disco está deshabilitado en producción (Vercel serverless)."
+                )
+
+            # Fallback a disco local ÚNICAMENTE en desarrollo local (DEBUG=True)
             folder = os.path.join(settings.MEDIA_ROOT, "productos")
             os.makedirs(folder, exist_ok=True)
             ext = os.path.splitext(uploaded_file.name)[1].lower() or ".jpg"
@@ -314,10 +328,14 @@ class ProductoService:
                 "access": "public",
             }
 
+            # Asegurar puntero del archivo al inicio
+            if hasattr(uploaded_file, "seek"):
+                uploaded_file.seek(0)
+
             # Leer el contenido del archivo
             file_content = uploaded_file.read()
 
-            # Crear la solicitud con urllib
+            # Crear solicitud PUT a la API oficial de Vercel Blob
             req = urllib.request.Request(
                 url,
                 data=file_content,
@@ -337,10 +355,19 @@ class ProductoService:
                     )
 
                 return blob_url
+        except urllib.error.HTTPError as e:
+            error_body = ""
+            try:
+                error_body = e.read().decode("utf-8")
+            except Exception:
+                pass
+            raise RuntimeError(
+                f"Error HTTP {e.code} subiendo archivo a Vercel Blob: {e.reason}. {error_body}"
+            )
         except Exception as e:
             raise RuntimeError(
                 f"Error subiendo archivo a Vercel Blob Storage: {str(e)}. "
-                "Verifica que BLOB_READ_WRITE_TOKEN sea válido."
+                "Verifica que BLOB_MIVENTA_READ_WRITE_TOKEN sea válido."
             )
 
     @staticmethod
