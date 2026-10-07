@@ -1,8 +1,17 @@
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from django.urls import path, include
 
+def api_root(request):
+    return JsonResponse({
+        "status": "ok",
+        "service": "MiVenta API",
+        "version": "1.0.0"
+    })
+
 urlpatterns = [
+    path("", api_root),
     path("api/users/", include("apps.users.urls")),
     path("api/categories/", include("apps.categories.urls")),
     path("api/products/", include("apps.products.urls")),

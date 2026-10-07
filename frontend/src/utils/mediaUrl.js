@@ -7,7 +7,19 @@
  *   pueda cargarla cuando el frontend corre en otro host/puerto.
  */
 
-const API_ORIGIN = "http://127.0.0.1:8000";
+const getApiOrigin = () => {
+    const apiUrl = import.meta.env.VITE_API_URL;
+    if (apiUrl && apiUrl.startsWith("http")) {
+        try {
+            return new URL(apiUrl).origin;
+        } catch {
+            return "http://127.0.0.1:8000";
+        }
+    }
+    return "http://127.0.0.1:8000";
+};
+
+const API_ORIGIN = getApiOrigin();
 
 export const mediaUrl = (value, fallback = null) => {
     if (!value) return fallback;
