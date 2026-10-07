@@ -137,6 +137,43 @@ class ProductoCompletoView(APIView):
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
+class BlobUploadUrlView(APIView):
+    """
+    Solo staff: devuelve una URL directa y token para subir videos (hasta 15 MB)
+    directamente a Vercel Blob desde el navegador, evitando el límite de 4.5 MB
+    de las Serverless Functions de Vercel.
+    """
+    get_permissions = _permisos_admin_en_mutacion
+
+    def post(self, request):
+        import os
+        import uuid
+        from django.conf import settings
+
+        token = (
+            os.environ.get("BLOB_MIVENTA_READ_WRITE_TOKEN")
+            or os.environ.get("BLOB_READ_WRITE_TOKEN")
+            or getattr(settings, "BLOB_READ_WRITE_TOKEN", None)
+        )
+        if not token:
+            return Response({"detail": "Token de Vercel Blob no configurado en el servidor."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        filename = request.data.get("filename", "video.mp4")
+        ext = os.path.splitext(filename)[1].lower() or ".mp4"
+        if ext not in [".mp4", ".webm", ".m4v"]:
+            return Response({"detail": "Solo se permiten videos MP4 y WebM."}, status=status.HTTP_400_BAD_REQUEST)
+
+        blob_path = f"productos/{uuid.uuid4().hex}{ext}"
+        upload_url = f"https://blob.vercel-storage.com/{blob_path}"
+
+        return Response({
+            "upload_url": upload_url,
+            "token": token,
+            "blob_path": blob_path,
+        })
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
 class LowStockVariantesView(APIView):
     """Solo staff (lo usa el dashboard admin)."""
     get_permissions = _permisos_admin_en_mutacion

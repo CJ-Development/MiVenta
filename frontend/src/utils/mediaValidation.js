@@ -2,6 +2,8 @@
  * Constantes y utilidades de validación para imágenes y videos en productos.
  */
 
+import { getBlobUploadUrl } from "../services/adminService";
+
 export const MAX_IMAGES_SIMPLE = 6;
 export const MAX_IMAGES_VARIABLE = 8;
 export const MAX_VIDEO_COUNT = 1;
@@ -248,3 +250,48 @@ export const validateVideoUrl = (url) => {
         video.src = trimmed;
     });
 };
+
+/**
+ * Sube un archivo de video directamente a Vercel Blob usando la URL y token
+ * proporcionados por el backend. Permite subir videos de hasta 15 MB evitando
+ * el límite de 4.5 MB de las Serverless Functions de Vercel. Si no está disponible
+ * o falla, retorna null para que el formulario use el fallback habitual por FormData.
+ */
+export async function uploadVideoToVercelBlob(file) {
+    if (!file) return null;
+    try {
+        const resUrl = await getBlobUploadUrl(file.name);
+        const data = resUrl.data;
+        if (!data?.upload_url || !data?.token) {
+            return null;
+        }
+
+        const ext = `.${(file.name || "").split(".").pop().toLowerCase()}`;
+        const contentType = file.type || (ext === ".webm" ? "video/webm" : "video/mp4");
+
+        const putRes = await fetch(data.upload_url, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${data.token}`,
+                "Content-Type": contentType,
+                "x-api-version": "7",
+                "x-content-type": contentType,
+                "x-add-random-suffix": "0",
+                "access": "public",
+            },
+            body: file,
+        });
+
+        if (!putRes.ok) {
+            console.warn("Direct Vercel Blob upload HTTP non-ok:", putRes.status);
+            return null;
+        }
+
+        const resultJson = await putRes.json();
+        return resultJson?.url || null;
+    } catch (err) {
+        console.warn("Error en subida directa a Vercel Blob, recurriendo a FormData:", err);
+        return null;
+    }
+}
+

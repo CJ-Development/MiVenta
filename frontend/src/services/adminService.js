@@ -21,6 +21,9 @@ export const saveProductComplete = (productId, formData) =>
         ? api.put(`/products/${productId}/completo/`, formData)
         : api.post("/products/completo/", formData);
 
+export const getBlobUploadUrl = (filename) =>
+    api.post("/products/blob-upload-url/", { filename });
+
 export const archiveProduct = (id) => api.delete(`/products/${id}/`);
 export const reactivateProduct = (id) => api.post(`/products/${id}/reactivar/`);
 export const reactivateProductById = reactivateProduct;

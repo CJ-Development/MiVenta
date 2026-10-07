@@ -41,6 +41,7 @@ import {
     validateVideoFile,
     validateVideoUrl,
     isVideoResource,
+    uploadVideoToVercelBlob,
     MAX_IMAGES_VARIABLE,
     MAX_VIDEO_FILE_SIZE_MB,
     MAX_VIDEO_DURATION_SECONDS,
@@ -265,10 +266,15 @@ function VariableProductForm({
     const [designModalOpen, setDesignModalOpen] = useState(false);
     const [newDesignName, setNewDesignName] = useState("");
 
-    // Modal para agregar Talla personalizada
+    // Modal y estados para agregar Talla personalizada
     const [tallaModalOpen, setTallaModalOpen] = useState(false);
     const [newTallaName, setNewTallaName] = useState("");
     const [tallaModalTarget, setTallaModalTarget] = useState(null); // { colorIndex, sizeIndex? }
+
+    // Creación de talla rápida inline por color: "Crear talla -> escribo la talla -> se usa"
+    const [inlineTallaInputs, setInlineTallaInputs] = useState({});
+    const [inlineTallaOpenForColor, setInlineTallaOpenForColor] = useState({});
+    const [creatingTallaLoading, setCreatingTallaLoading] = useState(false);
 
     const fileInputRef = useRef(null);
     const [dragOver, setDragOver] = useState(false);
@@ -417,10 +423,8 @@ function VariableProductForm({
     };
 
     const handleSizeSelectChange = (colorIndex, sizeIndex, newSizeName) => {
-        if (newSizeName === "__NEW__") {
-            setTallaModalTarget({ colorIndex, sizeIndex });
-            setNewTallaName("");
-            setTallaModalOpen(true);
+        if (newSizeName === "__CREAR_TALLA__" || newSizeName === "__NEW__") {
+            setInlineTallaOpenForColor((prev) => ({ ...prev, [colorIndex]: true }));
             return;
         }
         const found = dbSizes.find(
@@ -439,6 +443,75 @@ function VariableProductForm({
             next[colorIndex] = group;
             return next;
         });
+    };
+
+    // Crear talla -> escribo la talla -> se usa y se guarda de inmediato en la base de datos
+    const handleUsarNuevaTalla = async (colorIndex) => {
+        const rawVal = (inlineTallaInputs[colorIndex] || "").trim();
+        if (!rawVal) return;
+        const tName = rawVal.toUpperCase();
+
+        setCreatingTallaLoading(true);
+        try {
+            await ensureCsrf();
+            let tallaObj = dbSizes.find((s) => s.nombre.toUpperCase() === tName);
+
+            if (!tallaObj) {
+                try {
+                    const res = await createTalla({ nombre: tName });
+                    if (res.data) {
+                        tallaObj = res.data;
+                        setDbSizes((prev) => [...prev, tallaObj]);
+                    }
+                } catch (err) {
+                    try {
+                        const allRes = await getTallas();
+                        const allTallas = allRes.data?.results || allRes.data || [];
+                        setDbSizes(Array.isArray(allTallas) ? allTallas : []);
+                        tallaObj = allTallas.find((s) => s.nombre.toUpperCase() === tName);
+                    } catch (_) {}
+                }
+            }
+
+            const finalTallaId = tallaObj ? tallaObj.id_talla : null;
+
+            setColorGroups((prev) => {
+                const next = [...prev];
+                const group = { ...next[colorIndex] };
+                const sizes = [...group.sizes];
+
+                // Si la variante tiene una sola talla con stock 0 y nombre genérico placeholder, reemplazarla
+                if (sizes.length === 1 && Number(sizes[0].stock) === 0 && (!sizes[0].id_talla || sizes[0].nombre === "S" || sizes[0].nombre === "XS")) {
+                    sizes[0] = {
+                        ...sizes[0],
+                        nombre: tName,
+                        id_talla: finalTallaId,
+                    };
+                } else {
+                    // Si ya tenía datos o más tallas, agregarla como nueva talla al color
+                    sizes.push({
+                        id_variante: null,
+                        id_talla: finalTallaId,
+                        nombre: tName,
+                        stock: 0,
+                        sku: "",
+                    });
+                }
+
+                group.sizes = sizes;
+                next[colorIndex] = group;
+                return next;
+            });
+
+            // Limpiar y cerrar la caja inline
+            setInlineTallaInputs((prev) => ({ ...prev, [colorIndex]: "" }));
+            setInlineTallaOpenForColor((prev) => ({ ...prev, [colorIndex]: false }));
+        } catch (err) {
+            console.error("Error al guardar y usar talla:", err);
+            alert("No fue posible guardar la talla. Verifica la conexión.");
+        } finally {
+            setCreatingTallaLoading(false);
+        }
     };
 
     // Agregar un par de talla y stock a una fila de color
@@ -898,14 +971,33 @@ function VariableProductForm({
 
                 if (group.video) {
                     if (group.video.file) {
-                        const videoKey = `color_${gIdx}_video`;
-                        formData.append(videoKey, group.video.file, group.video.file.name);
-                        processedImages.push({
-                            principal: false,
-                            orden: processedImages.length + 1,
-                            file_key: videoKey,
-                            tipo: "video",
-                        });
+                        // Subir a Vercel Blob directamente para videos de hasta 15 MB
+                        // sin saturar el límite de 4.5 MB de Serverless Functions
+                        let directBlobUrl = null;
+                        try {
+                            directBlobUrl = await uploadVideoToVercelBlob(group.video.file);
+                        } catch (vidErr) {
+                            console.warn("Fallo en subida directa a Vercel Blob:", vidErr);
+                        }
+
+                        if (directBlobUrl) {
+                            processedImages.push({
+                                imagen: directBlobUrl,
+                                principal: false,
+                                orden: processedImages.length + 1,
+                                tipo: "video",
+                            });
+                        } else {
+                            // Fallback habitual a FormData procesado por ProductoService._save_uploaded_file
+                            const videoKey = `color_${gIdx}_video`;
+                            formData.append(videoKey, group.video.file, group.video.file.name);
+                            processedImages.push({
+                                principal: false,
+                                orden: processedImages.length + 1,
+                                file_key: videoKey,
+                                tipo: "video",
+                            });
+                        }
                     } else if (group.video.imagen) {
                         processedImages.push({
                             ...(group.video.id_imagen ? { id_imagen: group.video.id_imagen } : {}),
@@ -1011,8 +1103,10 @@ function VariableProductForm({
                 setError(backendErrors.detail);
             } else if (typeof backend === "string") {
                 setError(backend);
+            } else if (err.message && err.message.includes("Network Error")) {
+                setError("Error de red o conexión al servidor. Comprueba la conexión o intenta subir el video nuevamente.");
             } else {
-                setError("Ocurrió un error al guardar el producto con variantes.");
+                setError(err.message || "Ocurrió un error al guardar el producto con variantes.");
             }
         } finally {
             setLoading(false);
@@ -1469,7 +1563,7 @@ function VariableProductForm({
                                                                 {ds.nombre}
                                                             </option>
                                                         ))}
-                                                        <option value="__NEW__">+ Crear nueva talla...</option>
+                                                        <option value="__CREAR_TALLA__">✨ + Crear talla...</option>
                                                     </select>
 
                                                     <span className="var-size-label-tag">Stock</span>
@@ -1508,21 +1602,77 @@ function VariableProductForm({
                                                 <Plus size={13} />
                                                 Talla
                                             </button>
+
+                                            {/* BOTÓN DIRECTO: CREAR TALLA */}
                                             <button
                                                 type="button"
-                                                className="var-add-size-pair-btn"
-                                                style={{ borderColor: "#a855f7", color: "#6b21a8" }}
+                                                className="var-add-size-pair-btn var-btn-crear-talla-accion"
+                                                style={{ borderColor: "#a855f7", color: "#6b21a8", background: "#fbf8ff" }}
                                                 onClick={() => {
-                                                    setTallaModalTarget({ colorIndex: cIdx });
-                                                    setNewTallaName("");
-                                                    setTallaModalOpen(true);
+                                                    setInlineTallaOpenForColor((prev) => ({
+                                                        ...prev,
+                                                        [cIdx]: !prev[cIdx],
+                                                    }));
                                                 }}
-                                                title="Crear y agregar una nueva talla a este color"
+                                                title="Crear una talla personalizada (ej: 32, 12, XL) y usarla de inmediato"
                                             >
                                                 <Sparkles size={13} />
-                                                Nueva talla
+                                                Crear talla
                                             </button>
                                         </div>
+
+                                        {/* CAJA INLINE: CREAR TALLA -> ESCRIBO LA TALLA -> SE USA */}
+                                        {inlineTallaOpenForColor[cIdx] && (
+                                            <div className="var-inline-crear-talla-container">
+                                                <div className="var-inline-crear-talla-header">
+                                                    <Sparkles size={13} color="#6a2ca0" />
+                                                    <span><strong>Crear talla:</strong> escribe la talla y presiona "Usar"</span>
+                                                </div>
+                                                <div className="var-inline-crear-talla-row">
+                                                    <input
+                                                        type="text"
+                                                        className="var-inline-talla-input"
+                                                        placeholder="Escribe la talla (ej: 32, 12, XL, 40)..."
+                                                        value={inlineTallaInputs[cIdx] || ""}
+                                                        onChange={(e) =>
+                                                            setInlineTallaInputs((prev) => ({
+                                                                ...prev,
+                                                                [cIdx]: e.target.value,
+                                                            }))
+                                                        }
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") {
+                                                                e.preventDefault();
+                                                                handleUsarNuevaTalla(cIdx);
+                                                            }
+                                                        }}
+                                                        autoFocus
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="var-usar-talla-confirm-btn"
+                                                        disabled={!(inlineTallaInputs[cIdx] || "").trim() || creatingTallaLoading}
+                                                        onClick={() => handleUsarNuevaTalla(cIdx)}
+                                                    >
+                                                        {creatingTallaLoading ? <Loader2 size={13} className="var-spin" /> : <Check size={14} />}
+                                                        Usar
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="var-inline-talla-cancel-btn"
+                                                        onClick={() =>
+                                                            setInlineTallaOpenForColor((prev) => ({
+                                                                ...prev,
+                                                                [cIdx]: false,
+                                                            }))
+                                                        }
+                                                        title="Cancelar"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
 

@@ -4,6 +4,7 @@ from .views import (
     ProductoView,
     ProductoDetalleView,
     ProductoCompletoView,
+    BlobUploadUrlView,
     ProductoArchivarView,
     ProductoReactivarView,
     ProductoRecomendacionesView,
@@ -23,6 +24,7 @@ from .views import (
 urlpatterns = [
     path("", ProductoView.as_view()),
     path("completo/", ProductoCompletoView.as_view()),
+    path("blob-upload-url/", BlobUploadUrlView.as_view()),
     path("<int:id>/", ProductoDetalleView.as_view()),
     path("<int:id>/completo/", ProductoCompletoView.as_view()),
     path("<int:id>/archivar/", ProductoArchivarView.as_view()),

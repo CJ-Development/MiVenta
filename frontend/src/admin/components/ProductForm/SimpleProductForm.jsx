@@ -31,6 +31,7 @@ import {
     validateVideoFile,
     validateVideoUrl,
     isVideoResource,
+    uploadVideoToVercelBlob,
 } from "../../../utils/mediaValidation";
 
 const API_ORIGIN = "http://127.0.0.1:8000";
@@ -380,14 +381,30 @@ function SimpleProductForm({ product, onClose, onSaved, onSwitchToVariable }) {
             // Procesar video si existe
             if (video) {
                 if (video.file) {
-                    const videoKey = `variant_0_video`;
-                    formData.append(videoKey, video.file, video.file.name);
-                    processedImages.push({
-                        principal: false,
-                        orden: processedImages.length + 1,
-                        file_key: videoKey,
-                        tipo: "video",
-                    });
+                    let directBlobUrl = null;
+                    try {
+                        directBlobUrl = await uploadVideoToVercelBlob(video.file);
+                    } catch (vErr) {
+                        console.warn("Fallo en subida directa a Vercel Blob (simple):", vErr);
+                    }
+
+                    if (directBlobUrl) {
+                        processedImages.push({
+                            imagen: directBlobUrl,
+                            principal: false,
+                            orden: processedImages.length + 1,
+                            tipo: "video",
+                        });
+                    } else {
+                        const videoKey = `variant_0_video`;
+                        formData.append(videoKey, video.file, video.file.name);
+                        processedImages.push({
+                            principal: false,
+                            orden: processedImages.length + 1,
+                            file_key: videoKey,
+                            tipo: "video",
+                        });
+                    }
                 } else if (video.imagen) {
                     processedImages.push({
                         ...(video.id_imagen ? { id_imagen: video.id_imagen } : {}),
