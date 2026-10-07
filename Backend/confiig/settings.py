@@ -206,13 +206,14 @@ if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
+            conn_max_age=0,
+            conn_health_checks=False,
             ssl_require=True,
         )
     }
     if "postgresql" in DATABASES["default"].get("ENGINE", "") or "postgres" in DATABASE_URL:
         DATABASES["default"]["ENGINE"] = "django.db.backends.postgresql"
+        DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
 else:
     # Conector para usar MySQL en Python en desarrollo local (XAMPP)
     try:
