@@ -193,27 +193,28 @@ TEMPLATES = [
 # DATABASE
 # ============================================================
 
-# Si se proporciona DATABASE_URL (Supabase PostgreSQL), usar dj_database_url
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
-DATABASE_URL = (
-    os.environ.get("DATABASE_URL")
-    or os.environ.get("POSTGRES_URL")
-    or os.environ.get("SUPABASE_DB_URL")
-)
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=0,
-            conn_health_checks=False,
+            conn_health_checks=True,
             ssl_require=True,
         )
     }
     if "postgresql" in DATABASES["default"].get("ENGINE", "") or "postgres" in DATABASE_URL:
         DATABASES["default"]["ENGINE"] = "django.db.backends.postgresql"
         DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
+elif not DEBUG:
+    raise ImproperlyConfigured(
+        "Falta la variable de entorno DATABASE_URL. "
+        "En producción (DEBUG=False), DATABASE_URL es obligatoria para la conexión a PostgreSQL."
+    )
 else:
     # Conector para usar MySQL en Python en desarrollo local (XAMPP)
     try:
