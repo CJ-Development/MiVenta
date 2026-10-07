@@ -299,6 +299,10 @@ STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Límites de carga: permitir archivos (imágenes/videos) de hasta 25 MB en multipart/form-data
+DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024  # 25 MB
+
 
 # ============================================================
 # CORS

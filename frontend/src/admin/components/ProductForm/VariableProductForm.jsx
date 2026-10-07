@@ -265,6 +265,11 @@ function VariableProductForm({
     const [designModalOpen, setDesignModalOpen] = useState(false);
     const [newDesignName, setNewDesignName] = useState("");
 
+    // Modal para agregar Talla personalizada
+    const [tallaModalOpen, setTallaModalOpen] = useState(false);
+    const [newTallaName, setNewTallaName] = useState("");
+    const [tallaModalTarget, setTallaModalTarget] = useState(null); // { colorIndex, sizeIndex? }
+
     const fileInputRef = useRef(null);
     const [dragOver, setDragOver] = useState(false);
 
@@ -276,17 +281,36 @@ function VariableProductForm({
             getTallas().catch(() => ({ data: [] })),
             getDesigns().catch(() => ({ data: [] })),
         ]).then(([catRes, colRes, sizeRes, desRes]) => {
-            const cats = catRes.data || [];
-            const cols = colRes.data || [];
-            const sizes = sizeRes.data || [];
-            const designs = desRes.data || [];
+            const cats = catRes.data?.results || catRes.data || [];
+            const cols = colRes.data?.results || colRes.data || [];
+            const sizes = sizeRes.data?.results || sizeRes.data || [];
+            const designs = desRes.data?.results || desRes.data || [];
 
-            setCategories(cats);
-            setDbColors(cols);
-            setDbSizes(sizes);
-            setDbDesigns(designs);
+            setCategories(Array.isArray(cats) ? cats : []);
+            setDbColors(Array.isArray(cols) ? cols : []);
+            setDbSizes(Array.isArray(sizes) ? sizes : []);
+            setDbDesigns(Array.isArray(designs) ? designs : []);
         });
     }, []);
+
+    // Lista combinada de tallas disponibles (DB + estándar) sin duplicados
+    const allAvailableSizes = useMemo(() => {
+        const setNames = new Set();
+        const list = [];
+        (dbSizes || []).forEach((ds) => {
+            if (ds?.nombre && !setNames.has(ds.nombre.toUpperCase())) {
+                setNames.add(ds.nombre.toUpperCase());
+                list.push({ id_talla: ds.id_talla, nombre: ds.nombre });
+            }
+        });
+        STANDARD_SIZES.forEach((sz) => {
+            if (!setNames.has(sz.toUpperCase())) {
+                setNames.add(sz.toUpperCase());
+                list.push({ id_talla: null, nombre: sz });
+            }
+        });
+        return list;
+    }, [dbSizes]);
 
     // Manejar cambios en campos de texto Paso 1
     const handleDataChange = (e) => {
@@ -353,15 +377,14 @@ function VariableProductForm({
             }
         }
 
+        const firstSize = allAvailableSizes[0] || { id_talla: null, nombre: "S" };
         const newGroup = {
             id_color: colorId || `col-${Date.now()}`,
             nombre: nameClean,
             codigo_hex: hex || "#6A2CA0",
             diseño_id: datos.diseño_id || null,
             sizes: [
-                { id_talla: null, nombre: "S", stock: 0, sku: "" },
-                { id_talla: null, nombre: "M", stock: 0, sku: "" },
-                { id_talla: null, nombre: "L", stock: 0, sku: "" },
+                { id_talla: firstSize.id_talla, nombre: firstSize.nombre, stock: 0, sku: "" },
             ],
             imagenes: [],
             video: null,
@@ -394,6 +417,12 @@ function VariableProductForm({
     };
 
     const handleSizeSelectChange = (colorIndex, sizeIndex, newSizeName) => {
+        if (newSizeName === "__NEW__") {
+            setTallaModalTarget({ colorIndex, sizeIndex });
+            setNewTallaName("");
+            setTallaModalOpen(true);
+            return;
+        }
         const found = dbSizes.find(
             (s) => s.nombre.toUpperCase() === newSizeName.toUpperCase()
         );
@@ -417,13 +446,82 @@ function VariableProductForm({
         setColorGroups((prev) => {
             const next = [...prev];
             const group = { ...next[colorIndex] };
+            const existingNames = new Set((group.sizes || []).map(s => (s.nombre || "").toUpperCase()));
+            const nextAvailable = allAvailableSizes.find(s => !existingNames.has(s.nombre.toUpperCase())) || allAvailableSizes[0] || { id_talla: null, nombre: "M" };
             group.sizes = [
                 ...group.sizes,
-                { id_talla: null, nombre: "XL", stock: 0, sku: "" },
+                { id_talla: nextAvailable.id_talla || null, nombre: nextAvailable.nombre, stock: 0, sku: "" },
             ];
             next[colorIndex] = group;
             return next;
         });
+    };
+
+    // Crear una nueva talla en la base de datos y asignarla a la variante
+    const handleCreateTallaSubmit = async (e) => {
+        e.preventDefault();
+        const tName = newTallaName.trim().toUpperCase();
+        if (!tName) return;
+
+        try {
+            await ensureCsrf();
+            let tallaObj = dbSizes.find(
+                (s) => s.nombre.toUpperCase() === tName
+            );
+
+            if (!tallaObj) {
+                try {
+                    const res = await createTalla({ nombre: tName });
+                    if (res.data) {
+                        tallaObj = res.data;
+                        setDbSizes((prev) => [...prev, tallaObj]);
+                    }
+                } catch (createErr) {
+                    const allRes = await getTallas();
+                    const allTallas = allRes.data?.results || allRes.data || [];
+                    setDbSizes(Array.isArray(allTallas) ? allTallas : []);
+                    tallaObj = allTallas.find((s) => s.nombre.toUpperCase() === tName);
+                }
+            }
+
+            if (tallaObj) {
+                if (tallaModalTarget && typeof tallaModalTarget.sizeIndex === "number") {
+                    const { colorIndex, sizeIndex } = tallaModalTarget;
+                    setColorGroups((prev) => {
+                        const next = [...prev];
+                        const group = { ...next[colorIndex] };
+                        const sizes = [...group.sizes];
+                        sizes[sizeIndex] = {
+                            ...sizes[sizeIndex],
+                            nombre: tallaObj.nombre,
+                            id_talla: tallaObj.id_talla,
+                        };
+                        group.sizes = sizes;
+                        next[colorIndex] = group;
+                        return next;
+                    });
+                } else if (tallaModalTarget && typeof tallaModalTarget.colorIndex === "number") {
+                    const { colorIndex } = tallaModalTarget;
+                    setColorGroups((prev) => {
+                        const next = [...prev];
+                        const group = { ...next[colorIndex] };
+                        group.sizes = [
+                            ...group.sizes,
+                            { id_talla: tallaObj.id_talla, nombre: tallaObj.nombre, stock: 0, sku: "" },
+                        ];
+                        next[colorIndex] = group;
+                        return next;
+                    });
+                }
+            }
+
+            setNewTallaName("");
+            setTallaModalOpen(false);
+            setTallaModalTarget(null);
+        } catch (err) {
+            console.error("Error al crear talla:", err);
+            alert("No fue posible crear la talla.");
+        }
     };
 
     // Quitar un par de talla y stock de una fila de color
@@ -747,7 +845,8 @@ function VariableProductForm({
             const variantsPayload = [];
 
             // 1. Asegurar que las tallas y colores existan con ID real en BD
-            for (const group of colorGroups) {
+            for (let gIdx = 0; gIdx < colorGroups.length; gIdx++) {
+                const group = colorGroups[gIdx];
                 let realColorId = typeof group.id_color === "number" ? group.id_color : null;
                 if (!realColorId) {
                     const matchCol = dbColors.find(
@@ -762,6 +861,9 @@ function VariableProductForm({
                                 codigo_hex: group.codigo_hex || "#6A2CA0",
                             });
                             realColorId = created.data?.id_color;
+                            if (created.data) {
+                                setDbColors((prev) => [...prev, created.data]);
+                            }
                         } catch (cErr) {
                             console.warn("Color create fallback:", cErr);
                         }
@@ -772,69 +874,77 @@ function VariableProductForm({
                     group.diseño_id ||
                     (datos.diseño_id ? Number(datos.diseño_id) : null);
 
+                // Procesar imágenes y video del grupo de color UNA SOLA VEZ
                 const groupImages = group.imagenes || [];
+                const processedImages = groupImages.map((img, imgIdx) => {
+                    if (img.file) {
+                        const fileKey = `color_${gIdx}_image_${imgIdx}`;
+                        formData.append(fileKey, img.file, img.file.name);
+                        return {
+                            principal: Boolean(img.principal || imgIdx === 0),
+                            orden: imgIdx + 1,
+                            file_key: fileKey,
+                            tipo: "imagen",
+                        };
+                    }
+                    return {
+                        ...(img.id_imagen ? { id_imagen: img.id_imagen } : {}),
+                        imagen: img.imagen,
+                        principal: Boolean(img.principal || imgIdx === 0),
+                        orden: imgIdx + 1,
+                        tipo: "imagen",
+                    };
+                });
 
-                for (const sizeItem of group.sizes) {
-                    const variantIndex = variantsPayload.length;
+                if (group.video) {
+                    if (group.video.file) {
+                        const videoKey = `color_${gIdx}_video`;
+                        formData.append(videoKey, group.video.file, group.video.file.name);
+                        processedImages.push({
+                            principal: false,
+                            orden: processedImages.length + 1,
+                            file_key: videoKey,
+                            tipo: "video",
+                        });
+                    } else if (group.video.imagen) {
+                        processedImages.push({
+                            ...(group.video.id_imagen ? { id_imagen: group.video.id_imagen } : {}),
+                            imagen: group.video.imagen,
+                            principal: false,
+                            orden: processedImages.length + 1,
+                            tipo: "video",
+                        });
+                    }
+                }
+
+                for (let sIdx = 0; sIdx < group.sizes.length; sIdx++) {
+                    const sizeItem = group.sizes[sIdx];
 
                     // Asegurar ID de talla
                     let realTallaId = typeof sizeItem.id_talla === "number" ? sizeItem.id_talla : null;
-                    if (!realTallaId && sizeItem.nombre) {
-                        const matchSize = dbSizes.find(
-                            (s) => s.nombre.toUpperCase() === sizeItem.nombre.toUpperCase()
+                    const sName = (sizeItem.nombre || "").trim();
+                    if (!realTallaId && sName) {
+                        let matchSize = dbSizes.find(
+                            (s) => s.nombre.toUpperCase() === sName.toUpperCase()
                         );
                         if (matchSize) {
                             realTallaId = matchSize.id_talla;
                         } else {
                             try {
-                                const createdS = await createTalla({ nombre: sizeItem.nombre.toUpperCase() });
-                                realTallaId = createdS.data?.id_talla;
+                                const createdS = await createTalla({ nombre: sName.toUpperCase() });
+                                if (createdS.data) {
+                                    realTallaId = createdS.data.id_talla;
+                                    setDbSizes((prev) => [...prev, createdS.data]);
+                                }
                             } catch (sErr) {
-                                console.warn("Talla create fallback:", sErr);
+                                try {
+                                    const allRes = await getTallas();
+                                    const allTallas = allRes.data?.results || allRes.data || [];
+                                    setDbSizes(Array.isArray(allTallas) ? allTallas : []);
+                                    const found = allTallas.find(s => s.nombre.toUpperCase() === sName.toUpperCase());
+                                    if (found) realTallaId = found.id_talla;
+                                } catch (_) {}
                             }
-                        }
-                    }
-
-                    // Procesar fotos de esta variante
-                    const processedImages = groupImages.map((img, imgIdx) => {
-                        if (img.file) {
-                            const fileKey = `variant_${variantIndex}_image_${imgIdx}`;
-                            formData.append(fileKey, img.file, img.file.name);
-                            return {
-                                principal: Boolean(img.principal || imgIdx === 0),
-                                orden: imgIdx + 1,
-                                file_key: fileKey,
-                                tipo: "imagen",
-                            };
-                        }
-                        return {
-                            ...(img.id_imagen ? { id_imagen: img.id_imagen } : {}),
-                            imagen: img.imagen,
-                            principal: Boolean(img.principal || imgIdx === 0),
-                            orden: imgIdx + 1,
-                            tipo: "imagen",
-                        };
-                    });
-
-                    // Si hay un video para este grupo/color, agregarlo
-                    if (group.video) {
-                        if (group.video.file) {
-                            const videoKey = `variant_${variantIndex}_video`;
-                            formData.append(videoKey, group.video.file, group.video.file.name);
-                            processedImages.push({
-                                principal: false,
-                                orden: processedImages.length + 1,
-                                file_key: videoKey,
-                                tipo: "video",
-                            });
-                        } else if (group.video.imagen) {
-                            processedImages.push({
-                                ...(group.video.id_imagen ? { id_imagen: group.video.id_imagen } : {}),
-                                imagen: group.video.imagen,
-                                principal: false,
-                                orden: processedImages.length + 1,
-                                tipo: "video",
-                            });
                         }
                     }
 
@@ -848,6 +958,10 @@ function VariableProductForm({
                             designName
                         );
 
+                    // REGLA: Las imágenes pertenecen a la variante/color.
+                    // Se asignan únicamente a la primera talla del color (sIdx === 0).
+                    // Para tallas adicionales del mismo color (sIdx > 0), se envía imagenes: []
+                    // para evitar duplicación de imágenes en la base de datos y en la galería.
                     variantsPayload.push({
                         ...(sizeItem.id_variante
                             ? { id_variante: sizeItem.id_variante }
@@ -857,7 +971,7 @@ function VariableProductForm({
                         talla_id: realTallaId,
                         sku: sku,
                         stock: Number(sizeItem.stock) || 0,
-                        imagenes: processedImages,
+                        imagenes: sIdx === 0 ? processedImages : [],
                     });
                 }
             }
@@ -1347,19 +1461,15 @@ function VariableProductForm({
                                                             handleSizeSelectChange(cIdx, sIdx, e.target.value)
                                                         }
                                                     >
-                                                        {dbSizes.length > 0 ? (
-                                                            dbSizes.map((ds) => (
-                                                                <option key={ds.id_talla} value={ds.nombre}>
-                                                                    {ds.nombre}
-                                                                </option>
-                                                            ))
-                                                        ) : (
-                                                            STANDARD_SIZES.map((sz) => (
-                                                                <option key={sz} value={sz}>
-                                                                    {sz}
-                                                                </option>
-                                                            ))
+                                                        {sizeItem.nombre && !allAvailableSizes.some(s => s.nombre.toUpperCase() === sizeItem.nombre.toUpperCase()) && (
+                                                            <option value={sizeItem.nombre}>{sizeItem.nombre}</option>
                                                         )}
+                                                        {allAvailableSizes.map((ds) => (
+                                                            <option key={ds.id_talla || ds.nombre} value={ds.nombre}>
+                                                                {ds.nombre}
+                                                            </option>
+                                                        ))}
+                                                        <option value="__NEW__">+ Crear nueva talla...</option>
                                                     </select>
 
                                                     <span className="var-size-label-tag">Stock</span>
@@ -1393,10 +1503,24 @@ function VariableProductForm({
                                                 type="button"
                                                 className="var-add-size-pair-btn"
                                                 onClick={() => handleAddSizeToColor(cIdx)}
-                                                title="Agregar otra talla a este color"
+                                                title="Agregar otra talla existente a este color"
                                             >
                                                 <Plus size={13} />
                                                 Talla
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="var-add-size-pair-btn"
+                                                style={{ borderColor: "#a855f7", color: "#6b21a8" }}
+                                                onClick={() => {
+                                                    setTallaModalTarget({ colorIndex: cIdx });
+                                                    setNewTallaName("");
+                                                    setTallaModalOpen(true);
+                                                }}
+                                                title="Crear y agregar una nueva talla a este color"
+                                            >
+                                                <Sparkles size={13} />
+                                                Nueva talla
                                             </button>
                                         </div>
                                     </div>
@@ -2307,6 +2431,76 @@ function VariableProductForm({
                                     disabled={!newDesignName.trim()}
                                 >
                                     Guardar diseño
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL PARA AGREGAR NUEVA TALLA */}
+            {tallaModalOpen && (
+                <div
+                    className="var-inline-modal-overlay"
+                    onClick={() => {
+                        setTallaModalOpen(false);
+                        setTallaModalTarget(null);
+                    }}
+                >
+                    <div
+                        className="var-inline-modal-card"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                            <h3 style={{ margin: 0, fontSize: "16px", color: "#1e1b4b" }}>
+                                Crear nueva talla o medida
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setTallaModalOpen(false);
+                                    setTallaModalTarget(null);
+                                }}
+                                style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b" }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateTallaSubmit}>
+                            <div style={{ marginBottom: "20px" }}>
+                                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#1e293b", marginBottom: "6px" }}>
+                                    Nombre de la talla *
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej. 32, 38, 12, XL, XXL, Única, 3T, 40..."
+                                    value={newTallaName}
+                                    onChange={(e) => setNewTallaName(e.target.value)}
+                                    autoFocus
+                                    className="var-text-input"
+                                    style={{ paddingLeft: "14px" }}
+                                    required
+                                />
+                            </div>
+
+                            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                                <button
+                                    type="button"
+                                    className="var-prev-step-btn"
+                                    onClick={() => {
+                                        setTallaModalOpen(false);
+                                        setTallaModalTarget(null);
+                                    }}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="var-next-step-btn"
+                                    disabled={!newTallaName.trim()}
+                                >
+                                    Guardar talla
                                 </button>
                             </div>
                         </form>

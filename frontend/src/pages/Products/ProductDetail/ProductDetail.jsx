@@ -93,12 +93,21 @@ function ProductDetail({ productId }) {
     const galeria = useMemo(() => {
         if (!producto) return [];
 
-        const todas = (producto.variantes || []).flatMap((v) =>
-            (v.imagenes || []).map((img) => ({
-                ...img,
-                variante_id: v.id_variante,
-            }))
-        );
+        const mapa = new Map();
+        (producto.variantes || []).forEach((v) => {
+            (v.imagenes || []).forEach((img) => {
+                const url = img.imagen;
+                if (url && !mapa.has(url)) {
+                    mapa.set(url, {
+                        ...img,
+                        variante_id: v.id_variante,
+                        color_id: v.color?.id_color,
+                    });
+                }
+            });
+        });
+
+        const todas = Array.from(mapa.values());
 
         if (todas.length === 0 && producto.imagenes?.length > 0) {
             return producto.imagenes;
@@ -301,11 +310,10 @@ function ProductDetail({ productId }) {
     ===================================================== */
     const handleSeleccionarColor = (idColor) => {
         setColorSeleccionado(idColor);
-        const varianteDelColor = (producto?.variantes || []).find(v => v.color?.id_color === idColor);
-        if (varianteDelColor) {
-            const idx = galeria.findIndex(img => img.variante_id === varianteDelColor.id_variante);
-            if (idx >= 0) setImagenActiva(idx);
-        }
+        const idx = galeria.findIndex(
+            (img) => img.color_id === idColor || (producto?.variantes || []).find(v => v.id_variante === img.variante_id)?.color?.id_color === idColor
+        );
+        if (idx >= 0) setImagenActiva(idx);
     };
 
     const handleAgregarCarrito = async () => {
@@ -322,9 +330,13 @@ function ProductDetail({ productId }) {
             return;
         }
 
+        const imagenVariante =
+            (variante?.imagenes || []).find((i) => i.principal)?.imagen ||
+            (producto?.variantes || []).find(v => v.color?.id_color === variante?.color?.id_color && v.imagenes?.length > 0)?.imagenes?.[0]?.imagen;
+
         const imagen =
             mediaUrl(
-                (variante?.imagenes || []).find((i) => i.principal)?.imagen,
+                imagenVariante,
                 null
             ) ||
             imagenActual ||

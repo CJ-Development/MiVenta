@@ -311,16 +311,20 @@ class ProductoService:
             ext = os.path.splitext(uploaded_file.name)[1].lower() or ".jpg"
             filename = f"productos/{uuid.uuid4().hex}{ext}"
 
-            content_type = (
-                getattr(uploaded_file, "content_type", None)
-                or mimetypes.guess_type(uploaded_file.name)[0]
-                or "application/octet-stream"
-            )
+            content_type = getattr(uploaded_file, "content_type", None)
+            if not content_type or content_type == "application/octet-stream":
+                if ext in [".mp4", ".m4v"]:
+                    content_type = "video/mp4"
+                elif ext in [".webm"]:
+                    content_type = "video/webm"
+                else:
+                    content_type = mimetypes.guess_type(uploaded_file.name)[0] or "application/octet-stream"
 
             url = f"https://blob.vercel-storage.com/{filename}"
 
             headers = {
                 "Authorization": f"Bearer {token}",
+                "Content-Type": content_type,
                 "x-api-version": "7",
                 "x-content-type": content_type,
                 "x-cache-control-max-age": "31536000",
@@ -343,7 +347,7 @@ class ProductoService:
                 method='PUT'
             )
 
-            with urllib.request.urlopen(req, timeout=60) as response:
+            with urllib.request.urlopen(req, timeout=120) as response:
                 response_data = response.read()
                 data = json.loads(response_data.decode('utf-8'))
                 
