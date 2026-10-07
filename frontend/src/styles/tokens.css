@@ -1,0 +1,195 @@
+/* ============================================================
+   DESIGN TOKENS — miVenta.co
+   Paleta oficial + variables de diseño
+   ============================================================ */
+
+:root {
+    /* ============================================================
+       COLORES BASE
+       ============================================================ */
+
+    /* Brand Purple (primario) */
+    --color-primary: #6A2CA0;
+    --color-primary-dark: #521B80;     /* Más oscuro para hover */
+    --color-primary-darker: #3D1260;   /* Texto sobre fondo claro, pasa AA */
+    --color-primary-light: #F3EAFB;    /* Fondo suave */
+    --color-primary-lighter: #F9F5FD;
+
+    /* Heart Pink (CTAs / acentos emocionales) */
+    --color-pink: #FF4F9A;
+    --color-pink-dark: #D93A7E;        /* Hover */
+    --color-pink-light: #FFF0F7;
+
+    /* Soft Violet (fondos secundarios) */
+    --color-violet: #C59BFF;
+    --color-violet-light: #F0E8FF;
+
+    /* Grises (texto y superficies) */
+    --color-text: #1F2937;             /* Texto principal — 13.6:1 sobre blanco */
+    --color-text-muted: #4B5563;       /* Texto secundario — 7.5:1 sobre blanco */
+    --color-text-subtle: #707070;      /* Texto auxiliar — Neutral Gray miVenta */
+    --color-border: #E5E7EB;
+    --color-border-light: #EEF1F2;
+
+    /* Superficies */
+    --color-bg: #FFFFFF;
+    --color-bg-alt: #F9F5FD;           /* Fondo violeta muy suave */
+    --color-bg-alt-2: #F9FAFB;
+
+    /* ============================================================
+       TOKENS SEMÁNTICOS (estados y roles UI)
+       Los CSS de páginas deben consumir estos, NO colores sueltos.
+       ============================================================ */
+
+    /* Superficies */
+    --surface-page: #F3EAFB;           /* Fondo de página (Login, Register) */
+    --surface-card: #FFFFFF;           /* Fondo de tarjetas */
+    --surface-input: #FFFFFF;          /* Fondo de inputs */
+    --surface-input-alt: #F9F5FD;      /* Fondo alternativo inputs */
+    --surface-soft: #F3EAFB;           /* Fondo suave violeta (badges, features) */
+
+    /* Texto */
+    --text-primary: #1F2937;           /* Texto principal (body, inputs) */
+    --text-on-primary: #FFFFFF;        /* Texto sobre violeta sólido */
+    --text-on-dark: #FFFFFF;           /* Texto sobre fondo oscuro */
+    --text-muted: #4B5563;             /* Texto secundario */
+    --text-subtle: #707070;            /* Texto auxiliar — Neutral Gray */
+    --text-heading: #3D1260;           /* Títulos (morado oscuro miVenta) */
+    --text-heading-soft: #521B80;      /* Variante semisólida */
+    --text-link: #6A2CA0;              /* Color de links */
+    --text-link-hover: #521B80;        /* Hover de links */
+
+    /* Bordes */
+    --border-default: #E5E7EB;
+    --border-input: #D7E0E5;
+    --border-input-focus: #6A2CA0;
+
+    /* Estados */
+    --color-success: #16A34A;
+    --color-success-dark: #15803D;
+    --color-success-soft: #DCFCE7;
+    --color-success-border: #BBF7D0;
+
+    --color-danger: #DC2626;
+    --color-danger-dark: #B91C1C;
+    --color-danger-soft: #FEE2E2;
+    --color-danger-border: #FECACA;
+
+    --color-warning: #F59E0B;
+    --color-warning-dark: #D97706;
+    --color-warning-soft: #FEF3C7;
+    --color-warning-border: #FDE68A;
+
+    /* Sombras de estados */
+    --shadow-success: 0 6px 18px rgba(22, 163, 74, .18);
+
+    /* Anillos de focus */
+    --ring-primary: 0 0 0 3px rgba(106, 44, 160, .12);
+    --ring-danger: 0 0 0 3px rgba(220, 38, 38, .12);
+
+    /* ============================================================
+       SOMBRAS
+       ============================================================ */
+    --shadow-sm: 0 1px 2px rgba(31, 41, 55, .05);
+    --shadow-md: 0 4px 12px rgba(31, 41, 55, .06);
+    --shadow-lg: 0 10px 28px rgba(31, 41, 55, .08);
+    --shadow-xl: 0 16px 40px rgba(31, 41, 55, .12);
+
+    /* Sombras de color (acentos miVenta) */
+    --shadow-primary: 0 6px 18px rgba(106, 44, 160, .22);
+    --shadow-pink: 0 6px 18px rgba(255, 79, 154, .25);
+    --shadow-violet: 0 6px 18px rgba(197, 155, 255, .25);
+
+    /* ============================================================
+       RADIOS
+       ============================================================ */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 22px;
+    --radius-full: 9999px;
+
+    /* ============================================================
+       TIPOGRAFÍA — miVenta.co
+       ============================================================ */
+    --font-primary: 'Montserrat', 'Segoe UI', system-ui, -apple-system,
+        'Helvetica Neue', Arial, sans-serif;
+    --font-body: 'Lato', 'Segoe UI', system-ui, -apple-system,
+        'Helvetica Neue', Arial, sans-serif;
+    --font-digital: 'Poppins', 'Segoe UI', system-ui, -apple-system,
+        'Helvetica Neue', Arial, sans-serif;
+
+    /* Alias de compatibilidad */
+    --font-sans: var(--font-body);
+
+    --fs-xs: 11px;
+    --fs-sm: 13px;
+    --fs-base: 14px;
+    --fs-md: 16px;
+    --fs-lg: 18px;
+    --fs-xl: 22px;
+    --fs-2xl: 28px;
+    --fs-3xl: 36px;
+
+    /* ============================================================
+       ESPACIADO (escala 4px)
+       ============================================================ */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+
+    /* ============================================================
+       TRANSICIONES
+       ============================================================ */
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+    --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+    --transition-fast: 150ms var(--ease-out);
+    --transition: 250ms var(--ease-out);
+    --transition-slow: 400ms var(--ease-out);
+
+    /* ============================================================
+       Z-INDEX
+       ============================================================ */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-drawer: 300;
+    --z-modal: 400;
+    --z-toast: 500;
+}
+
+/* ============================================================
+   MODO OSCURO — preparación futura
+   ============================================================ */
+
+@media (prefers-color-scheme: dark) {
+    /* Descomentar cuando se active dark mode
+    :root {
+        --color-bg: #0F1419;
+        --color-bg-alt: #1A1F26;
+        --color-text: #F3F4F6;
+        --color-text-muted: #D1D5DB;
+        --color-text-subtle: #9CA3AF;
+        --color-border: #2D3540;
+        --color-border-light: #232A33;
+    }
+    */
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --transition-fast: 0ms;
+        --transition: 0ms;
+        --transition-slow: 0ms;
+    }
+}

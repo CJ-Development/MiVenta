@@ -1,0 +1,237 @@
+/* ============================================================
+   HERO — miVenta.co
+   Diseño original, limpio, identidad propia
+============================================================ */
+
+.mv-hero {
+    background: var(--color-bg);
+    width: 100%;
+}
+
+/* ============================================================
+   SECCIÓN PRINCIPAL
+============================================================ */
+
+.mv-hero-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 56px 32px 32px;
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    gap: 48px;
+    align-items: center;
+}
+
+/* ============================================================
+   CONTENIDO IZQUIERDO
+============================================================ */
+
+.mv-hero-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-family: var(--font-primary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    margin-bottom: 20px;
+    border: 1px solid var(--color-violet-light);
+}
+
+.mv-hero-title {
+    font-family: var(--font-primary);
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800;
+    color: var(--text-heading);
+    line-height: 1.15;
+    margin: 0 0 20px;
+    letter-spacing: -0.5px;
+}
+
+.mv-hero-title-highlight {
+    color: var(--color-primary);
+}
+
+.mv-hero-desc {
+    font-family: var(--font-body);
+    font-size: 17px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin: 0 0 32px;
+    max-width: 460px;
+}
+
+.mv-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.mv-hero-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-pink);
+    color: #FFFFFF;
+    font-family: var(--font-primary);
+    font-size: 15px;
+    font-weight: 700;
+    padding: 14px 28px;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 6px 20px rgba(255, 79, 154, 0.35);
+}
+
+.mv-hero-btn-primary:hover {
+    background: var(--color-pink-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(255, 79, 154, 0.45);
+}
+
+.mv-hero-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-primary);
+    font-family: var(--font-primary);
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 14px 20px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-primary-light);
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.mv-hero-btn-ghost:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+/* ============================================================
+   VISUAL DERECHO
+============================================================ */
+
+.mv-hero-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 420px;
+}
+
+.mv-hero-visual-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mv-hero-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #F3EAFB 0%, #E8D5F8 60%, rgba(197, 155, 255, 0.2) 100%);
+    box-shadow: 0 0 60px rgba(197, 155, 255, 0.35);
+    z-index: 1;
+}
+
+.mv-hero-image {
+    position: relative;
+    z-index: 2;
+    max-width: 100%;
+    max-height: 380px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 18px 36px rgba(106, 44, 160, 0.22));
+    animation: mv-hero-float 4s ease-in-out infinite;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+}
+
+.mv-hero-image:hover {
+    transform: translateY(-8px) scale(1.04);
+    filter: drop-shadow(0 24px 44px rgba(106, 44, 160, 0.3));
+}
+
+@keyframes mv-hero-float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-12px);
+    }
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET
+============================================================ */
+
+@media (max-width: 1024px) {
+    .mv-hero-main {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 44px 24px 28px;
+        gap: 40px;
+    }
+
+    .mv-hero-visual {
+        height: 320px;
+        order: -1;
+    }
+
+    .mv-hero-image {
+        max-height: 290px;
+    }
+
+    .mv-hero-circle {
+        width: 260px;
+        height: 260px;
+    }
+
+    .mv-hero-desc {
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .mv-hero-actions {
+        justify-content: center;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE
+============================================================ */
+
+@media (max-width: 600px) {
+    .mv-hero-main {
+        padding: 32px 16px 24px;
+    }
+
+    .mv-hero-visual {
+        height: 250px;
+    }
+
+    .mv-hero-image {
+        max-height: 220px;
+    }
+
+    .mv-hero-circle {
+        width: 200px;
+        height: 200px;
+    }
+}
+

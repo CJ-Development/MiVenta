@@ -1,0 +1,812 @@
+/* =========================================================
+   PRODUCT TABLE — miVenta.co
+   Diseño de alta fidelidad basado en el mockup visual
+   ========================================================= */
+
+.product-table-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* =========================================================
+   1. KPI CARDS (4 COLUMNAS INTERACTIVAS)
+   ========================================================= */
+.product-kpi-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    width: 100%;
+}
+
+.product-kpi-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 14px 18px;
+    border: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
+}
+
+.product-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+/* Variantes temáticas de tarjetas KPI */
+.product-kpi-card.purple {
+    border-color: #f3e8ff;
+    background: linear-gradient(135deg, #ffffff 60%, #faf5ff);
+}
+.product-kpi-card.purple.active-filter {
+    border-color: #c084fc;
+    box-shadow: 0 0 0 2px rgba(106, 44, 160, 0.15);
+}
+
+.product-kpi-card.green {
+    border-color: #dcfce7;
+    background: linear-gradient(135deg, #ffffff 60%, #f0fdf4);
+}
+.product-kpi-card.green.active-filter {
+    border-color: #86efac;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+}
+
+.product-kpi-card.amber {
+    border-color: #fef3c7;
+    background: linear-gradient(135deg, #ffffff 60%, #fffbeb);
+}
+.product-kpi-card.amber.active-filter {
+    border-color: #fcd34d;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+
+.product-kpi-card.pink {
+    border-color: #ffe4e6;
+    background: linear-gradient(135deg, #ffffff 60%, #fff1f2);
+}
+.product-kpi-card.pink.active-filter {
+    border-color: #fda4af;
+    box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.15);
+}
+
+.kpi-card-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.kpi-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpi-icon-box.purple {
+    background: #f5f3ff;
+    color: #6A2CA0;
+    border: 1px solid #ede9fe;
+}
+
+.kpi-icon-box.green {
+    background: #ecfdf5;
+    color: #10b981;
+    border: 1px solid #d1fae5;
+}
+
+.kpi-icon-box.amber {
+    background: #fffbeb;
+    color: #f59e0b;
+    border: 1px solid #fef3c7;
+}
+
+.kpi-icon-box.pink {
+    background: #fff1f2;
+    color: #f43f5e;
+    border: 1px solid #ffe4e6;
+}
+
+.kpi-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-number {
+    font-size: 24px;
+    font-weight: 850;
+    color: #0f172a;
+    line-height: 1;
+    margin-bottom: 3px;
+    letter-spacing: -0.5px;
+}
+
+.kpi-title {
+    font-size: 13px;
+    font-weight: 750;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.kpi-sub {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 1px;
+}
+
+.kpi-trend-box {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+.kpi-trend-box.purple { color: #a855f7; }
+.kpi-trend-box.green { color: #10b981; }
+.kpi-trend-box.amber { color: #f59e0b; }
+.kpi-trend-box.pink { color: #f43f5e; }
+
+/* =========================================================
+   2. TOOLBAR DE BÚSQUEDA Y FILTROS
+   ========================================================= */
+.products-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.products-search-pill-box {
+    flex: 1;
+    min-width: 260px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-pill-icon {
+    position: absolute;
+    left: 15px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.products-search-pill-box input {
+    width: 100%;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    padding: 0 16px 0 42px;
+    font-size: 13.5px;
+    color: #0f172a;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.products-search-pill-box input:focus {
+    border-color: #6A2CA0;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(106, 44, 160, 0.1);
+}
+
+.products-search-pill-box input::placeholder {
+    color: #94a3b8;
+}
+
+/* Grupo de filtros a la derecha */
+.products-filters-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-select-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    height: 42px;
+    padding: 0 32px 0 14px;
+    transition: all 0.2s ease;
+}
+
+.filter-select-pill:hover {
+    border-color: #cbd5e1;
+}
+
+.filter-select-pill select {
+    appearance: none;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    font-family: inherit;
+}
+
+.select-pill-arrow {
+    position: absolute;
+    right: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.filter-select-pill.sort-pill {
+    padding: 0 32px 0 32px;
+}
+
+.sort-icon-prefix {
+    position: absolute;
+    left: 12px;
+    color: #64748b;
+    pointer-events: none;
+}
+
+.filter-reset-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 42px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #6A2CA0;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.filter-reset-pill-btn:hover {
+    background: #faf5ff;
+    border-color: #d8b4fe;
+}
+
+.filter-reset-pill-btn.has-filters {
+    background: #faf5ff;
+    border-color: #c084fc;
+}
+
+.filter-active-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #FF4F9A;
+    display: inline-block;
+}
+
+/* =========================================================
+   3. TABLA CON ENCABEZADO MORADO REAL (#581c87)
+   ========================================================= */
+.products-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 4px;
+}
+
+.products-styled-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* ENCABEZADO MORADO */
+.table-purple-header-row {
+    background: #581c87;
+    color: #ffffff;
+}
+
+.table-purple-header-row th {
+    padding: 13px 16px;
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.2px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.table-purple-header-row th:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    text-align: center;
+    width: 44px;
+    padding: 13px 12px;
+}
+
+.table-purple-header-row th:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    text-align: center;
+    width: 120px;
+}
+
+.th-sort-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* CHECKBOX PERSONALIZADO */
+.custom-table-checkbox {
+    width: 17px;
+    height: 17px;
+    border-radius: 5px;
+    accent-color: #6A2CA0;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+/* FILAS DE LA TABLA */
+.product-row td {
+    padding: 14px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s ease;
+    background: #ffffff;
+}
+
+.product-row:hover td {
+    background: #faf5ff;
+}
+
+.product-row.row-selected td {
+    background: #f5f3ff;
+}
+
+.td-col-check {
+    text-align: center;
+    width: 44px;
+    padding: 14px 12px !important;
+}
+
+/* COLUMNA PRODUCTO */
+.product-media-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.product-thumb-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    flex-shrink: 0;
+}
+
+.product-thumb-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-text-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.product-table-name {
+    font-size: 14px;
+    font-weight: 750;
+    color: #0f172a;
+    line-height: 1.25;
+}
+
+.product-table-sku {
+    font-size: 11.5px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* COLUMNA CATEGORÍA / SUBCATEGORÍA */
+.category-meta-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+}
+
+.category-pill-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 850;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.badge-cat-purple {
+    background: #f3e8ff;
+    color: #6A2CA0;
+    border: 1px solid #e9d5ff;
+}
+
+.badge-no-cat {
+    background: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid #bae6fd;
+}
+
+.subcategory-label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+    padding-left: 2px;
+}
+
+/* COLUMNA PRECIO */
+.product-price-highlight {
+    font-size: 15px;
+    font-weight: 850;
+    color: #581c87;
+    letter-spacing: -0.2px;
+}
+
+/* COLUMNA STOCK Y BARRA DE PROGRESO */
+.stock-meter-block {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 90px;
+}
+
+.stock-units-text {
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1;
+}
+
+.stock-units-text.stock-good { color: #059669; }
+.stock-units-text.stock-low { color: #d97706; }
+.stock-units-text.stock-empty { color: #dc2626; }
+
+.stock-progress-track {
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    overflow: hidden;
+}
+
+.stock-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.stock-progress-fill.bar-good { background: #059669; }
+.stock-progress-fill.bar-low { background: #f59e0b; }
+.stock-progress-fill.bar-empty { background: #dc2626; }
+
+/* COLUMNA ESTADO */
+.product-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-dot {
+    font-size: 9px;
+    line-height: 1;
+}
+
+.product-status-pill.status-active {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+}
+
+.product-status-pill.status-low {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fef3c7;
+}
+
+.product-status-pill.status-empty {
+    background: #fff1f2;
+    color: #e11d48;
+    border: 1px solid #ffe4e6;
+}
+
+.product-status-pill.status-inactive,
+.product-status-pill.status-archived {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+/* COLUMNA ACCIONES */
+.td-col-actions {
+    text-align: center;
+}
+
+.table-actions-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.action-icon-pill-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-icon-pill-btn.edit {
+    background: #f5f3ff;
+    border-color: #ede9fe;
+    color: #6A2CA0;
+}
+.action-icon-pill-btn.edit:hover {
+    background: #6A2CA0;
+    color: #ffffff;
+    border-color: #6A2CA0;
+    transform: translateY(-1.5px);
+    box-shadow: 0 3px 8px rgba(106, 44, 160, 0.25);
+}
+
+.action-icon-pill-btn.copy {
+    background: #f5f3ff;
+    border-color: #ede9fe;
+    color: #6A2CA0;
+}
+.action-icon-pill-btn.copy:hover {
+    background: #6A2CA0;
+    color: #ffffff;
+    border-color: #6A2CA0;
+    transform: translateY(-1.5px);
+    box-shadow: 0 3px 8px rgba(106, 44, 160, 0.25);
+}
+
+.action-icon-pill-btn.delete {
+    background: #fff1f2;
+    border-color: #ffe4e6;
+    color: #e11d48;
+}
+.action-icon-pill-btn.delete:hover {
+    background: #e11d48;
+    color: #ffffff;
+    border-color: #e11d48;
+    transform: translateY(-1.5px);
+    box-shadow: 0 3px 8px rgba(225, 29, 72, 0.25);
+}
+
+/* ESTADO VACÍO DE LA TABLA */
+.products-table-empty-row {
+    padding: 48px 20px !important;
+    text-align: center;
+}
+
+.table-empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+}
+
+.table-empty-message h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 750;
+    color: #334155;
+}
+
+.table-empty-message p {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.btn-clear-table-filters {
+    margin-top: 10px;
+    background: #6A2CA0;
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-clear-table-filters:hover {
+    background: #581c87;
+}
+
+/* =========================================================
+   4. FOOTER / PAGINACIÓN
+   ========================================================= */
+.products-table-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 4px 4px;
+    border-top: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+}
+
+.results-counter-text {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.results-counter-text strong {
+    color: #0f172a;
+    font-weight: 750;
+}
+
+.table-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pagination-arrow-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.pagination-arrow-btn:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.pagination-arrow-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination-number-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-number-btn:hover:not(.active) {
+    background: #faf5ff;
+    border-color: #d8b4fe;
+    color: #6A2CA0;
+}
+
+.pagination-number-btn.active {
+    background: #581c87;
+    color: #ffffff;
+    border-color: #581c87;
+    box-shadow: 0 3px 8px rgba(88, 28, 135, 0.25);
+}
+
+/* PANTALLAS DE CARGA Y ERROR */
+.product-table-loading-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 80px 20px;
+    color: #6A2CA0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.product-table-loading-screen .spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.product-table-error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px 20px;
+    color: #ef4444;
+}
+
+.product-table-error-state button {
+    background: #6A2CA0;
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .product-kpi-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .product-kpi-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .products-table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .products-filters-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-select-pill,
+    .filter-reset-pill-btn {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .products-table-footer {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+}

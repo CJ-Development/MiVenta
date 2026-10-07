@@ -1,0 +1,111 @@
+/* =========================================================
+   CATEGORIES PAGE STYLES — miVenta.co
+   Alineado con el mockup visual
+   ========================================================= */
+
+.categories-page-wrapper {
+    position: relative;
+    width: 100%;
+    color: #0f172a;
+}
+
+/* FORMAS DECORATIVAS AMBIENTALES DE FONDO */
+.categories-page-wrapper .dash-bg-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(85px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.categories-page-wrapper .shape-top {
+    top: -60px;
+    right: -40px;
+    width: 340px;
+    height: 340px;
+    background: rgba(255, 79, 154, 0.08);
+}
+
+.categories-page-wrapper .shape-bottom {
+    bottom: -60px;
+    left: -40px;
+    width: 400px;
+    height: 400px;
+    background: rgba(106, 44, 160, 0.07);
+}
+
+.categories-content-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
+
+/* =========================================================
+   HERO HEADER
+   ========================================================= */
+.categories-hero-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
+
+.categories-hero-titles {
+    display: flex;
+    flex-direction: column;
+}
+
+.categories-hero-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 850;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+.categories-hero-subtitle {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.new-category-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    background: #6A2CA0;
+    background: linear-gradient(135deg, #6A2CA0, #581c87);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(106, 44, 160, 0.28);
+}
+
+.new-category-btn:hover {
+    background: linear-gradient(135deg, #581c87, #4a1572);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(106, 44, 160, 0.38);
+}
+
+@media (max-width: 768px) {
+    .categories-hero-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .new-category-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

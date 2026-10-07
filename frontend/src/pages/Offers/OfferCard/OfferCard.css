@@ -1,0 +1,13 @@
+/* ============================================================
+   OFFER CARD (cliente)
+   VentasYa
+
+   Reutiliza las mismas clases visuales que ProductCard
+   (`pc-card`, `pc-image`, `pc-discount`, `pc-content`,
+   `pc-category`, `pc-price`, `pc-cart-button`) definidas
+   en ProductCard.css, para que las tarjetas de oferta se
+   vean idénticas a las de producto.
+
+   Aquí sólo va lo específico de oferta (si lo hubiera a
+   futuro). Por ahora está vacío a propósito.
+============================================================ */

@@ -1,0 +1,228 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lato:wght@300;400;700&family=Poppins:wght@400;500;600&display=swap');
+@import "tailwindcss";
+@import "./styles/tokens.css";
+
+
+/* ============================================================
+   BASE GLOBAL
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Evitar zoom automático en iOS al hacer focus en inputs */
+    -webkit-text-size-adjust: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-bg-alt);
+}
+
+body {
+    margin: 0;
+
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+    line-height: 1.5;
+
+    color: var(--color-text);
+    background: var(--color-bg);
+
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+
+    /* Safe area para dispositivos con notch (iPhone X+) */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* En móvil los inputs no deben disparar zoom en iOS (font-size mínimo 16px) */
+@media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="number"],
+    input[type="tel"],
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}
+
+
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+
+/* ============================================================
+   SCROLLBAR (suave y discreta)
+   ============================================================ */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg-alt);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-bg-alt);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-subtle);
+}
+
+
+/* ============================================================
+   FOCUS RING ACCESIBLE (AA)
+   ============================================================ */
+
+:focus-visible {
+    outline: 2px solid var(--color-primary-dark);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+
+/* ============================================================
+   SELECCIÓN DE TEXTO
+   ============================================================ */
+
+::selection {
+    background: var(--color-primary-light);
+    color: var(--color-primary-darker);
+}
+
+
+/* ============================================================
+   UTILIDADES COMPARTIDAS
+   ============================================================ */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+
+/* ============================================================
+   ANIMACIONES REUTILIZABLES
+   ============================================================ */
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scale-in {
+    from {
+        opacity: 0;
+        transform: scale(.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slide-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-pink {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 79, 154, .5);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 79, 154, 0);
+    }
+}
+
+@keyframes pulse-coral {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 79, 154, .5);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 79, 154, 0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in var(--transition) var(--ease-out) both;
+}
+
+.animate-scale-in {
+    animation: scale-in var(--transition) var(--ease-out) both;
+}
+
+.animate-slide-in-right {
+    animation: slide-in-right var(--transition) var(--ease-out) both;
+}
+
+.animate-slide-in-up {
+    animation: slide-in-up var(--transition) var(--ease-out) both;
+}

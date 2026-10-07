@@ -1,0 +1,147 @@
+/* =========================================================
+   USERS PAGE STYLES — miVenta.co
+   Rediseño visual de alta fidelidad basado en el mockup
+   ========================================================= */
+
+.users-page-wrapper {
+    position: relative;
+    width: 100%;
+    color: #0f172a;
+}
+
+/* FORMAS DECORATIVAS AMBIENTALES DE FONDO */
+.users-page-wrapper .dash-bg-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(85px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.users-page-wrapper .shape-top {
+    top: -50px;
+    right: -40px;
+    width: 320px;
+    height: 320px;
+    background: rgba(255, 79, 154, 0.08);
+}
+
+.users-page-wrapper .shape-bottom {
+    bottom: -50px;
+    left: -40px;
+    width: 380px;
+    height: 380px;
+    background: rgba(106, 44, 160, 0.07);
+}
+
+.users-content-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
+
+/* =========================================================
+   HERO HEADER
+   ========================================================= */
+.users-hero-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
+
+.users-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.users-hero-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(106, 44, 160, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(106, 44, 160, 0.08);
+    border: 1px solid rgba(106, 44, 160, 0.12);
+    flex-shrink: 0;
+}
+
+.users-hero-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.users-hero-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1e1b4b;
+    margin: 0;
+    letter-spacing: -0.6px;
+    line-height: 1.2;
+}
+
+.users-hero-subtitle {
+    font-size: 14.5px;
+    color: #64748b;
+    margin: 0;
+    font-weight: 450;
+}
+
+/* BOTÓN NUEVO USUARIO */
+.new-user-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #6A2CA0 0%, #581c87 100%);
+    color: #ffffff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(106, 44, 160, 0.28);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.new-user-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(106, 44, 160, 0.38);
+    background: linear-gradient(135deg, #7c3aed 0%, #6A2CA0 100%);
+}
+
+.new-user-btn:active {
+    transform: translateY(0);
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+@media (max-width: 768px) {
+    .users-hero-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .new-user-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .users-hero-title {
+        font-size: 24px;
+    }
+
+    .users-hero-subtitle {
+        font-size: 13.5px;
+    }
+}

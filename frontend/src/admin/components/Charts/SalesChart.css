@@ -1,0 +1,155 @@
+/* =========================================================
+   SALES CHART — miVenta.co
+   ========================================================= */
+
+.sales-chart-wrapper {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sales-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.sales-chart-title-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sales-chart-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #faf5ff;
+    border: 1px solid #f3e8ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sales-chart-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.2px;
+}
+
+.sales-chart-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.sales-chart-sub strong {
+    color: #6A2CA0;
+    font-weight: 700;
+}
+
+/* TABS DE PERÍODO */
+.sales-chart-period-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 3px;
+}
+
+.sales-period-btn {
+    border: none;
+    background: transparent;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sales-period-btn:hover {
+    color: #6A2CA0;
+}
+
+.sales-period-btn.active {
+    background: #6A2CA0;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(106, 44, 160, 0.25);
+}
+
+/* CONTENEDOR DEL CANVAS */
+.sales-chart-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+}
+
+.sales-chart-canvas-box {
+    width: 100%;
+    height: 100%;
+}
+
+/* BADGE FLOTANTE SOBRE EL ÚLTIMO PUNTO */
+.sales-chart-badge-callout {
+    position: absolute;
+    top: 14px;
+    right: 24px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.sales-chart-badge-callout span {
+    position: relative;
+    display: inline-block;
+    padding: 5px 12px;
+    background: #581c87;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(88, 28, 135, 0.35);
+    letter-spacing: 0.2px;
+}
+
+.sales-chart-badge-callout span::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #581c87;
+}
+
+@media (max-width: 600px) {
+    .sales-chart-canvas-container {
+        height: 230px;
+    }
+
+    .sales-chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

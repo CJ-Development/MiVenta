@@ -1,0 +1,315 @@
+/* ============================================================
+   FOOTER — miVenta.co
+   Diseño limpio, sin ondas, identidad propia
+============================================================ */
+
+.mv-footer {
+    background: #3D1260;
+    color: #FFFFFF;
+    width: 100%;
+}
+
+.mv-footer-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.2fr;
+    gap: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 56px 32px 48px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================
+   COLUMNAS
+============================================================ */
+
+.mv-footer-col {
+    padding: 0 24px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mv-footer-col:first-child {
+    padding-left: 0;
+}
+
+.mv-footer-col:last-child {
+    border-right: none;
+    padding-right: 0;
+}
+
+/* ============================================================
+   ENCABEZADOS
+============================================================ */
+
+.mv-footer-heading {
+    font-family: var(--font-primary);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #C59BFF;
+    margin: 0 0 20px;
+}
+
+/* ============================================================
+   ENLACES
+============================================================ */
+
+.mv-footer-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mv-footer-links a {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+    display: inline-block;
+}
+
+.mv-footer-links a:hover {
+    color: #FF4F9A;
+    padding-left: 4px;
+}
+
+/* ============================================================
+   REDES SOCIALES (Uiverse.io by wilsondesouza)
+============================================================ */
+
+.example-2 {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.example-2 .icon-content {
+  margin: 0;
+  position: relative;
+}
+
+.example-2 .icon-content .tooltip {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 5px;
+  opacity: 0;
+  visibility: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 20;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.example-2 .icon-content:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  top: -46px;
+}
+
+.example-2 .icon-content a {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: #4d4d4d;
+  background-color: #fff;
+  transition: all 0.3s ease-in-out;
+  text-decoration: none;
+}
+
+.example-2 .icon-content a:hover {
+  box-shadow: 3px 2px 45px 0px rgba(0, 0, 0, 0.25);
+}
+
+.example-2 .icon-content a svg {
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  transition: color 0.3s ease-in-out;
+}
+
+.example-2 .icon-content a:hover {
+  color: white;
+}
+
+.example-2 .icon-content a .filled {
+  position: absolute;
+  top: auto;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background-color: #000;
+  transition: all 0.3s ease-in-out;
+}
+
+.example-2 .icon-content a:hover .filled {
+  height: 100%;
+}
+
+/* Facebook */
+.example-2 .icon-content a[data-social="facebook"] .filled,
+.example-2 .icon-content a[data-social="facebook"] ~ .tooltip {
+  background-color: #1877f2;
+}
+
+/* Instagram */
+.example-2 .icon-content a[data-social="instagram"] .filled,
+.example-2 .icon-content a[data-social="instagram"] ~ .tooltip {
+  background: linear-gradient(
+    45deg,
+    #405de6,
+    #5b51db,
+    #b33ab4,
+    #c135b4,
+    #e1306c,
+    #fd1f1f
+  );
+}
+
+/* X (Twitter) */
+.example-2 .icon-content a[data-social="x"] .filled,
+.example-2 .icon-content a[data-social="x"] ~ .tooltip {
+  background-color: #000000;
+}
+
+/* TikTok */
+.example-2 .icon-content a[data-social="tiktok"] .filled,
+.example-2 .icon-content a[data-social="tiktok"] ~ .tooltip {
+  background-color: #010101;
+}
+
+/* ============================================================
+   MARCA / LOGO TEXTO
+============================================================ */
+
+.mv-footer-brand-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.mv-footer-logo-link {
+    display: inline-flex;
+    align-items: center;
+    background: #FFFFFF;
+    padding: 8px 16px;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    text-decoration: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mv-footer-logo-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.mv-footer-logo-img {
+    height: 42px;
+    width: auto;
+    max-width: 175px;
+    object-fit: contain;
+    display: block;
+}
+
+.mv-footer-tagline {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    max-width: 220px;
+    margin: 0;
+}
+
+/* ============================================================
+   FOOTER BOTTOM
+============================================================ */
+
+.mv-footer-bottom {
+    background: #2A0D44;
+}
+
+.mv-footer-bottom-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mv-footer-bottom p {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+    margin: 0;
+    text-align: center;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET
+============================================================ */
+
+@media (max-width: 900px) {
+    .mv-footer-inner {
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+        padding: 48px 24px 40px;
+    }
+
+    .mv-footer-col {
+        border-right: none;
+        padding: 0;
+    }
+
+    .mv-footer-brand-col {
+        grid-column: 1 / -1;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 28px;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE
+============================================================ */
+
+@media (max-width: 600px) {
+    .mv-footer-inner {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 40px 20px 32px;
+    }
+
+    .mv-footer-brand-col {
+        grid-column: auto;
+    }
+
+    .mv-footer-bottom-inner {
+        padding: 14px 20px;
+    }
+}

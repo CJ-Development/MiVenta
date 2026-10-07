@@ -1,0 +1,1070 @@
+/* =========================================================
+   PEDIDOS - VENTASYA
+   ========================================================= */
+
+.orders-page {
+    width: 100%;
+    min-height: 70vh;
+
+    background: #F5F7F8;
+
+    padding: 42px 20px 80px;
+}
+
+.orders-container {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.orders-header {
+    margin-bottom: 28px;
+}
+
+.orders-header h1 {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    margin: 0 0 8px;
+
+    color: #031927;
+
+    font-size: 32px;
+    font-weight: 700;
+
+    letter-spacing: -0.5px;
+}
+
+.orders-header h1 svg {
+    color: #6A2CA0;
+}
+
+.orders-header p {
+    margin: 0;
+
+    color: #6E7271;
+
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   LOADING / EMPTY / ERROR
+   ========================================================= */
+
+.orders-loading,
+.orders-empty,
+.orders-error {
+    min-height: 380px;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E2E8EA;
+
+    border-radius: 20px;
+
+    padding: 70px 30px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    gap: 14px;
+
+    color: #6E7271;
+
+    box-shadow: 0 8px 25px rgba(3, 25, 39, 0.05);
+}
+
+.orders-loading svg,
+.orders-empty svg,
+.orders-error svg {
+    color: #6A2CA0;
+}
+
+.orders-empty h2 {
+    margin: 5px 0 0;
+
+    color: #031927;
+
+    font-size: 22px;
+}
+
+.orders-empty p {
+    max-width: 520px;
+
+    margin: 0;
+
+    color: #6E7271;
+
+    line-height: 1.7;
+}
+
+/* =========================================================
+   LISTA DE PEDIDOS
+   ========================================================= */
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+}
+
+/* =========================================================
+   TARJETA DE PEDIDO
+   ========================================================= */
+
+.order-card {
+    position: relative;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E2E8EA;
+
+    border-radius: 18px;
+
+    padding: 22px 24px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(190px, 1.4fr)
+        minmax(130px, 1fr)
+        150px
+        auto;
+
+    grid-template-areas:
+        "id meta total actions"
+        "progress progress progress progress";
+
+    gap: 22px;
+
+    align-items: center;
+
+    box-shadow: 0 7px 22px rgba(3, 25, 39, 0.045);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+
+    border-color: #CFE7E9;
+
+    box-shadow: 0 12px 30px rgba(3, 25, 39, 0.08);
+}
+
+/* =========================================================
+   ID PEDIDO
+   ========================================================= */
+
+.order-card-id {
+    grid-area: id;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.order-card-id span {
+    color: #031927;
+
+    font-size: 16px;
+
+    font-weight: 700;
+}
+
+.order-card-id small {
+    color: #9CA3AF;
+
+    font-size: 12px;
+}
+
+/* =========================================================
+   INFORMACIÓN
+   ========================================================= */
+
+.order-card-meta {
+    grid-area: meta;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    color: #6E7271;
+
+    font-size: 12px;
+}
+
+.order-card-meta strong {
+    display: block;
+
+    color: #031927;
+
+    font-size: 14px;
+}
+
+.order-card-meta span {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    color: #6E7271;
+}
+
+.order-card-meta span svg {
+    color: #6A2CA0;
+}
+
+.order-card-meta-empty {
+    color: #B5B8B8 !important;
+
+    font-style: italic;
+}
+
+/* =========================================================
+   TOTAL
+   ========================================================= */
+
+.order-card-total {
+    grid-area: total;
+
+    color: #031927;
+
+    font-size: 17px;
+
+    font-weight: 700;
+
+    text-align: right;
+}
+
+/* =========================================================
+   ACCIONES
+   ========================================================= */
+
+.order-card-actions {
+    grid-area: actions;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+}
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+
+.order-status-badge {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 30px;
+
+    padding: 6px 12px;
+
+    border-radius: 30px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    text-transform: capitalize;
+
+    white-space: nowrap;
+}
+
+/* Pendiente */
+
+.order-status-badge.pendiente {
+    background: #FFF4D6;
+
+    color: #9A6700;
+}
+
+/* Pagado */
+
+.order-status-badge.pagado {
+    background: #E5F7EC;
+
+    color: #188A45;
+}
+
+/* Enviado */
+
+.order-status-badge.enviado {
+    background: #E5F2FF;
+
+    color: #1769AA;
+}
+
+/* Entregado */
+
+.order-status-badge.entregado {
+    background: #E7F7F7;
+
+    color: #007C89;
+}
+
+/* Cancelado */
+
+.order-status-badge.cancelado {
+    background: #FDEAEA;
+
+    color: #C62828;
+}
+
+/* =========================================================
+   BOTÓN DETALLE
+   ========================================================= */
+
+.order-detail-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 38px;
+
+    padding: 9px 15px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #6A2CA0;
+
+    color: #FFFFFF;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.order-detail-button:hover {
+    background: #031927;
+
+    transform: translateY(-1px);
+
+    box-shadow: 0 6px 15px rgba(3, 25, 39, 0.14);
+}
+
+/* =========================================================
+   PROGRESO
+   ========================================================= */
+
+.order-card-progress {
+    grid-area: progress;
+
+    position: relative;
+
+    height: 32px;
+
+    margin-top: 2px;
+
+    padding-top: 14px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+/* Línea base */
+
+.order-card-progress::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    top: 27px;
+
+    height: 3px;
+
+    background: #E8ECEC;
+
+    border-radius: 999px;
+}
+
+/* Línea activa */
+
+.order-card-progress-fill {
+    position: absolute;
+
+    left: 0;
+
+    top: 27px;
+
+    height: 3px;
+
+    background: #6A2CA0;
+
+    border-radius: 999px;
+
+    transition: width 0.4s ease;
+
+    z-index: 1;
+}
+
+/* =========================================================
+   PASOS
+   ========================================================= */
+
+.order-step {
+    position: relative;
+
+    z-index: 2;
+
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #FFFFFF;
+
+    border: 2px solid #E1E7E8;
+
+    color: #B5BCBD;
+
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        color 0.25s ease;
+}
+
+.order-step--done {
+    background: #FFFFFF;
+
+    border-color: #6A2CA0;
+
+    color: #6A2CA0;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.order-detail-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    padding: 20px;
+
+    background: rgba(3, 25, 39, 0.62);
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    backdrop-filter: blur(3px);
+}
+
+.order-detail-modal {
+    position: relative;
+
+    width: 100%;
+
+    max-width: 680px;
+
+    max-height: 88vh;
+
+    overflow-y: auto;
+
+    background: #FFFFFF;
+
+    border-radius: 22px;
+
+    padding: 28px 30px;
+
+    box-shadow:
+        0 25px 70px rgba(3, 25, 39, 0.25);
+
+    animation: order-modal-in 0.2s ease;
+}
+
+@keyframes order-modal-in {
+
+    from {
+        opacity: 0;
+
+        transform: translateY(12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0) scale(1);
+    }
+
+}
+
+/* =========================================================
+   HEADER MODAL
+   ========================================================= */
+
+.order-detail-modal .modal-header {
+    display: flex;
+
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 22px;
+
+    padding-bottom: 15px;
+
+    border-bottom: 1px solid #E2E8EA;
+}
+
+.order-detail-modal h2 {
+    margin: 0;
+
+    color: #031927;
+
+    font-size: 21px;
+}
+
+.modal-header-date {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #9CA3AF;
+
+    font-size: 12px;
+}
+
+/* =========================================================
+   CERRAR MODAL
+   ========================================================= */
+
+.order-detail-modal .close-modal {
+    width: 36px;
+    height: 36px;
+
+    flex-shrink: 0;
+
+    border: 1px solid #E2E8EA;
+
+    border-radius: 9px;
+
+    background: #FFFFFF;
+
+    color: #6E7271;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.2s ease;
+}
+
+.order-detail-modal .close-modal:hover {
+    background: #FDEAEA;
+
+    border-color: #FECACA;
+
+    color: #DC2626;
+}
+
+/* =========================================================
+   TIMELINE MODAL
+   ========================================================= */
+
+.order-timeline {
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 0;
+
+    margin-bottom: 22px;
+
+    padding: 18px 10px 15px;
+
+    background: #F5F8F8;
+
+    border-radius: 15px;
+}
+
+.timeline-step {
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #A4AAAB;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    text-align: center;
+}
+
+.timeline-circle {
+    position: relative;
+
+    z-index: 3;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #FFFFFF;
+
+    border: 2px solid #E1E7E8;
+
+    color: #AAB2B3;
+}
+
+/* Línea entre pasos */
+
+.timeline-step:not(:last-child)::after {
+    content: "";
+
+    position: absolute;
+
+    z-index: 1;
+
+    top: 19px;
+
+    left: calc(50% + 19px);
+
+    right: calc(-50% + 19px);
+
+    height: 3px;
+
+    background: #E1E7E8;
+}
+
+/* Paso completado */
+
+.timeline-step--done {
+    color: #6A2CA0;
+}
+
+.timeline-step--done .timeline-circle {
+    background: #6A2CA0;
+
+    border-color: #6A2CA0;
+
+    color: #FFFFFF;
+}
+
+.timeline-step--done:not(:last-child)::after {
+    background: #6A2CA0;
+}
+
+/* Paso actual */
+
+.timeline-step--current .timeline-circle {
+    box-shadow:
+        0 0 0 4px rgba(0, 151, 167, 0.14);
+}
+
+/* =========================================================
+   RESUMEN MODAL
+   ========================================================= */
+
+.detail-summary {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 12px;
+
+    margin-bottom: 24px;
+}
+
+.detail-summary-cell {
+    min-width: 0;
+
+    background: #F8FAFA;
+
+    border: 1px solid #E2E8EA;
+
+    border-radius: 12px;
+
+    padding: 13px 14px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.detail-summary-cell small {
+    color: #8A9293;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+.detail-summary-cell strong {
+    color: #031927;
+
+    font-size: 16px;
+}
+
+.detail-summary-cell span {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    color: #031927;
+
+    font-size: 12px;
+
+    word-break: break-word;
+}
+
+/* =========================================================
+   SECCIONES DETALLE
+   ========================================================= */
+
+.order-detail-modal .detail-section {
+    margin-bottom: 20px;
+}
+
+.order-detail-modal .detail-section h3 {
+    margin: 0 0 10px;
+
+    color: #031927;
+
+    font-size: 14px;
+
+    font-weight: 700;
+}
+
+.order-detail-modal .detail-section p {
+    margin: 0;
+
+    color: #6E7271;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+/* =========================================================
+   PRODUCTOS DEL PEDIDO
+   ========================================================= */
+
+.order-detail-modal .detail-products {
+    list-style: none;
+
+    padding: 0;
+    margin: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.order-detail-modal .detail-products li {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 12px 14px;
+
+    background: #F8FAFA;
+
+    border: 1px solid #E2E8EA;
+
+    border-radius: 10px;
+
+    color: #031927;
+
+    font-size: 13px;
+}
+
+.order-detail-modal .detail-products li span:last-child {
+    color: #6A2CA0;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+/* =========================================================
+   DIRECCIÓN
+   ========================================================= */
+
+.order-detail-modal .detail-section p {
+    padding: 12px 14px;
+
+    background: #F8FAFA;
+
+    border-radius: 10px;
+}
+
+/* =========================================================
+   LOADING DETALLE
+   ========================================================= */
+
+.detail-loading-inline {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: #6E7271;
+}
+
+/* =========================================================
+   FOOTER MODAL
+   ========================================================= */
+
+.detail-footer {
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 20px;
+
+    padding-top: 16px;
+
+    border-top: 1px solid #E2E8EA;
+}
+
+/* =========================================================
+   SPINNER
+   ========================================================= */
+
+.orders-spin {
+    color: #6A2CA0;
+
+    animation: orders-spin 0.9s linear infinite;
+}
+
+@keyframes orders-spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+/* =========================================================
+   RESPONSIVE TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .order-card {
+        grid-template-columns:
+            1fr
+            auto;
+
+        grid-template-areas:
+            "id actions"
+            "meta total"
+            "progress progress";
+    }
+
+    .order-card-total {
+        text-align: right;
+    }
+
+}
+
+/* =========================================================
+   RESPONSIVE MÓVIL
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .orders-page {
+        padding: 28px 15px 55px;
+    }
+
+    .orders-header h1 {
+        font-size: 26px;
+    }
+
+    .order-card {
+        grid-template-columns: 1fr;
+
+        grid-template-areas:
+            "id"
+            "meta"
+            "total"
+            "actions"
+            "progress";
+
+        gap: 13px;
+
+        padding: 18px;
+    }
+
+    .order-card-total {
+        text-align: left;
+
+        font-size: 16px;
+    }
+
+    .order-card-actions {
+        justify-content: flex-start;
+
+        flex-wrap: wrap;
+    }
+
+    .order-card-progress {
+        margin-top: 5px;
+    }
+
+    .detail-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .order-detail-modal {
+        max-height: 92vh;
+
+        padding: 22px 18px;
+
+        border-radius: 18px;
+    }
+
+    .order-timeline {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .timeline-step {
+        font-size: 10px;
+    }
+
+    .timeline-circle {
+        width: 34px;
+        height: 34px;
+    }
+
+    .timeline-step:not(:last-child)::after {
+        top: 17px;
+
+        left: calc(50% + 17px);
+        right: calc(-50% + 17px);
+    }
+
+}
+
+/* =========================================================
+   MÓVIL PEQUEÑO
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .orders-header h1 {
+        font-size: 23px;
+    }
+
+    .orders-header p {
+        font-size: 13px;
+    }
+
+    .order-card {
+        border-radius: 15px;
+    }
+
+    .order-card-actions {
+        width: 100%;
+
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .order-status-badge {
+        width: fit-content;
+    }
+
+    .order-detail-button {
+        width: 100%;
+    }
+
+    .order-detail-modal .modal-header h2 {
+        font-size: 18px;
+    }
+
+    .order-timeline {
+        overflow-x: auto;
+    }
+
+}

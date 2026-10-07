@@ -1,0 +1,467 @@
+/* ============================================================
+   PRODUCT CARD — miVenta.co
+   Clases prefijadas con `mv-product-` para evitar choques con
+   estilos globales del admin.
+   Paleta: Brand Purple #6A2CA0 · Heart Pink #FF4F9A · Soft Violet #C59BFF
+============================================================ */
+
+.mv-product-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(106, 44, 160, 0.09);
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+    position: relative;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+    min-width: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.mv-product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px rgba(106, 44, 160, 0.13);
+    border-color: rgba(106, 44, 160, 0.25);
+}
+
+
+/* ============================================================
+   IMAGEN
+============================================================ */
+
+.mv-product-img-wrap {
+    position: relative;
+    height: 280px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #fcfcfd 0%, #f6f7fb 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    padding: 10px;
+}
+
+.mv-product-img-wrap img {
+    width: auto;
+    max-width: 94%;
+    height: auto;
+    max-height: 94%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mv-product-card:hover .mv-product-img-wrap img {
+    transform: scale(1.05);
+}
+
+
+/* ============================================================
+   FALLBACK
+============================================================ */
+
+.mv-product-img-wrap img.is-fallback {
+    width: 100%;
+    height: 100%;
+    padding: 30px;
+    object-fit: contain;
+    opacity: 0.75;
+    background: var(--color-bg-alt-2);
+}
+
+
+/* ============================================================
+   BADGE DE DESCUENTO
+============================================================ */
+
+.mv-product-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #FF4F9A 0%, #E60067 100%);
+    color: #FFFFFF;
+    font-family: var(--font-primary);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.3px;
+    line-height: 1;
+    z-index: 5;
+    box-shadow: 0 4px 10px rgba(255, 79, 154, 0.35);
+}
+
+
+/* ============================================================
+   PREVISUALIZACIÓN DE VIDEO EN HOVER
+============================================================ */
+
+.mv-product-video-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 3;
+    background: #000000;
+}
+
+.mv-product-video-preview.is-visible {
+    opacity: 1;
+}
+
+.mv-product-video-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 9999px;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    z-index: 5;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mv-product-video-badge svg {
+    color: #FF4F9A;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.mv-product-card:hover .mv-product-video-badge {
+    background: rgba(106, 44, 160, 0.88);
+    border-color: rgba(255, 79, 154, 0.4);
+    box-shadow: 0 4px 14px rgba(106, 44, 160, 0.35);
+    transform: translateY(-1px);
+}
+
+.mv-product-card:hover .mv-product-video-badge svg {
+    transform: scale(1.15);
+    color: #ffffff;
+}
+
+.mv-product-video-badge.is-hovered {
+    background: linear-gradient(135deg, rgba(106, 44, 160, 0.95) 0%, rgba(88, 28, 135, 0.95) 100%);
+    border-color: rgba(255, 79, 154, 0.5);
+}
+
+
+/* ============================================================
+   CUERPO
+============================================================ */
+
+.mv-product-body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-height: 140px;
+}
+
+
+/* ============================================================
+   CATEGORÍA
+============================================================ */
+
+.mv-product-category {
+    align-self: flex-start;
+    display: inline-block;
+    color: var(--color-primary);
+    background: rgba(106, 44, 160, 0.07);
+    font-size: 10.5px;
+    font-weight: 700;
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+
+/* ============================================================
+   NOMBRE
+============================================================ */
+
+.mv-product-name {
+    font-family: var(--font-primary);
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.35;
+    margin: 2px 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.2s ease;
+}
+
+.mv-product-card:hover .mv-product-name {
+    color: var(--color-primary);
+}
+
+
+/* ============================================================
+   RATING (preparado para cuando se agregue)
+============================================================ */
+
+.mv-product-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mv-product-stars {
+    display: flex;
+    gap: 1px;
+    color: #F59E0B;
+}
+
+.mv-product-rating-count {
+    font-size: 12px;
+    color: var(--text-subtle);
+    font-family: var(--font-body);
+}
+
+
+/* ============================================================
+   PRECIOS
+============================================================ */
+
+.mv-product-prices {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.mv-product-price {
+    font-family: var(--font-primary);
+    font-size: 21px;
+    font-weight: 800;
+    color: var(--color-primary);
+    line-height: 1;
+    letter-spacing: -0.01em;
+}
+
+.mv-product-price-original {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: #94a3b8;
+    text-decoration: line-through;
+    font-weight: 500;
+}
+
+
+/* ============================================================
+   BOTÓN AGREGAR AL CARRITO
+============================================================ */
+
+.mv-product-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px 16px;
+    background: linear-gradient(135deg, #6A2CA0 0%, #521d80 100%);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-primary);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: auto;
+    box-shadow: 0 4px 12px rgba(106, 44, 160, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.mv-product-add-btn:hover {
+    background: linear-gradient(135deg, #7c34bc 0%, #5e2292 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(106, 44, 160, 0.35);
+}
+
+.mv-product-add-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(106, 44, 160, 0.2);
+}
+
+.mv-product-add-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* ============================================================
+   ANIMACIÓN SPINNER
+============================================================ */
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spin {
+    animation: spin 0.7s linear infinite;
+}
+
+
+/* ============================================================
+   RESPONSIVE — TABLET
+============================================================ */
+
+@media (max-width: 1350px) {
+    .mv-product-img-wrap {
+        height: 320px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .mv-product-img-wrap {
+        height: 340px;
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVE — MOBILE
+============================================================ */
+
+@media (max-width: 680px) {
+    .mv-product-img-wrap {
+        height: 260px;
+    }
+
+    .mv-product-body {
+        min-height: 120px;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 560px) {
+    .mv-product-img-wrap {
+        height: 200px;
+    }
+
+    .mv-product-body {
+        min-height: 110px;
+        padding: 10px 10px 12px;
+    }
+
+    .mv-product-name {
+        font-size: 12px;
+    }
+
+    .mv-product-price {
+        font-size: 15px;
+    }
+
+    .mv-product-price-original {
+        font-size: 10px;
+    }
+
+    .mv-product-add-btn {
+        padding: 9px 12px;
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .mv-product-badge {
+        top: 8px;
+        left: 8px;
+        padding: 4px 7px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 430px) {
+    .mv-product-card {
+        border-radius: var(--radius-md);
+    }
+
+    .mv-product-img-wrap {
+        height: 170px;
+    }
+
+    .mv-product-badge {
+        top: 6px;
+        left: 6px;
+        padding: 3px 6px;
+        font-size: 9px;
+    }
+
+    .mv-product-body {
+        padding: 8px 8px 10px;
+        min-height: 0;
+    }
+
+    .mv-product-category {
+        font-size: 9px;
+        letter-spacing: 0.3px;
+    }
+
+    .mv-product-name {
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .mv-product-price {
+        font-size: 13px;
+    }
+
+    .mv-product-price-original {
+        font-size: 10px;
+    }
+
+    .mv-product-add-btn {
+        padding: 7px 8px;
+        font-size: 10px;
+        gap: 4px;
+    }
+
+    .mv-product-add-btn svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .mv-product-card,
+    .mv-product-img-wrap img,
+    .mv-product-add-btn,
+    .mv-product-badge {
+        animation: none !important;
+        transition: none !important;
+    }
+}

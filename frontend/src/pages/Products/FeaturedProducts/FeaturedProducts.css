@@ -1,0 +1,631 @@
+/* ============================================================
+   FEATURED PRODUCTS / CATEGORÍAS — miVenta.co
+   Paleta: Brand Purple #6A2CA0 · Heart Pink #FF4F9A · Soft Violet #C59BFF
+============================================================ */
+
+/* ============================================================
+   SECCIÓN PRINCIPAL
+============================================================ */
+
+.featured-products {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px 28px 60px;
+    background: var(--color-bg);
+}
+
+
+/* ============================================================
+   HEADER CENTRADO — Productos destacados
+============================================================ */
+
+.featured-header-centered {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 26px;
+}
+
+.featured-header-centered h2 {
+    margin: 0;
+    color: var(--color-text);
+    font-family: var(--font-primary);
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+}
+
+
+/* ============================================================
+   CARRUSEL DE PRODUCTOS — CENTRADO, 4 CARDS, FLECHAS LATERALES
+============================================================ */
+
+.featured-carousel-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    position: relative;
+    padding: 8px 0 14px;
+}
+
+/* Botones flechas de navegación a lado y lado */
+.featured-nav-btn {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1px solid var(--color-border);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(106, 44, 160, 0.12);
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    z-index: 5;
+    flex-shrink: 0;
+    outline: none;
+}
+
+.featured-nav-btn:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: #FFFFFF;
+    border-color: var(--color-primary);
+    transform: scale(1.08);
+    box-shadow: 0 8px 24px rgba(106, 44, 160, 0.26);
+}
+
+.featured-nav-btn:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.featured-nav-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    box-shadow: none;
+    border-color: var(--color-border);
+}
+
+/* Viewport con scroll horizontal oculto */
+.featured-carousel-viewport {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    container-type: inline-size;
+    container-name: carousel;
+    padding: 10px 4px 14px;
+}
+
+.featured-carousel-viewport::-webkit-scrollbar {
+    display: none;
+}
+
+/* Track contenedor de tarjetas */
+.featured-carousel-track {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+    width: max-content;
+}
+
+.featured-carousel-track.is-centered {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Tarjeta de producto: exactamente 4 por pantalla */
+.featured-carousel-item {
+    --w: var(--carousel-vp-width, 100cqw);
+    width: calc((var(--w) - 60px) / 4);
+    min-width: calc((var(--w) - 60px) / 4);
+    max-width: calc((var(--w) - 60px) / 4);
+    flex-shrink: 0;
+    display: flex;
+    box-sizing: border-box;
+    scroll-snap-align: start;
+}
+
+.featured-carousel-item > * {
+    width: 100%;
+    height: 100%;
+}
+
+/* Enlace inferior Ver todos los productos */
+.featured-footer-action {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.featured-view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-primary);
+    font-family: var(--font-primary);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 10px 24px;
+    border-radius: var(--radius-full);
+    border: 1.5px solid var(--color-primary-light);
+    background: #FFFFFF;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(106, 44, 160, 0.08);
+}
+
+.featured-view-all-link:hover {
+    background: var(--color-primary);
+    color: #FFFFFF;
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(106, 44, 160, 0.22);
+}
+
+
+/* ============================================================
+   CATEGORÍAS — grid de tarjetas con imagen de fondo
+============================================================ */
+
+.mv-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 60px;
+}
+
+.mv-category-card {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+}
+
+.mv-category-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+}
+
+.mv-category-card:hover img {
+    transform: scale(1.08);
+}
+
+.mv-category-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(61, 18, 96, 0.80) 0%,
+        rgba(106, 44, 160, 0.20) 60%,
+        transparent 100%
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px;
+    transition: background 0.3s ease;
+}
+
+.mv-category-card:hover .mv-category-overlay {
+    background: linear-gradient(
+        to top,
+        rgba(61, 18, 96, 0.90) 0%,
+        rgba(106, 44, 160, 0.40) 60%,
+        transparent 100%
+    );
+}
+
+.mv-category-name {
+    font-family: var(--font-primary);
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 6px;
+}
+
+.mv-category-link {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: #C59BFF;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.mv-category-card:hover .mv-category-link {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+/* ============================================================
+   MENSAJES / EMPTY / LOADING
+============================================================ */
+
+.products-message {
+    width: 100%;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    text-align: center;
+    font-size: var(--fs-md);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+}
+
+.products-message p {
+    margin: 15px 0 0;
+    font-family: var(--font-body);
+}
+
+
+/* ============================================================
+   LOADER
+============================================================ */
+
+.products-loader {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: productsLoading 0.8s linear infinite;
+}
+
+@keyframes productsLoading {
+    to { transform: rotate(360deg); }
+}
+
+
+/* ============================================================
+   MODAL OVERLAY
+============================================================ */
+
+.product-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(31, 18, 50, 0.60);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    z-index: var(--z-modal);
+    animation: fade-in var(--transition) var(--ease-out);
+}
+
+.product-modal {
+    width: min(1300px, 96vw);
+    min-height: 760px;
+    background: var(--color-bg);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 58% 42%;
+    position: relative;
+    box-shadow: var(--shadow-xl);
+    animation: scale-in var(--transition) var(--ease-out);
+}
+
+
+/* ============================================================
+   CERRAR MODAL
+============================================================ */
+
+.close-modal {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 20px;
+    transition: background 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-modal:hover {
+    background: var(--color-primary);
+    color: #FFFFFF;
+    transform: rotate(90deg);
+}
+
+
+/* ============================================================
+   MODAL IMAGEN
+============================================================ */
+
+.modal-left {
+    background: var(--color-bg-alt-2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px;
+}
+
+.modal-left img {
+    width: 100%;
+    max-width: 620px;
+    max-height: 680px;
+    object-fit: contain;
+}
+
+
+/* ============================================================
+   MODAL INFORMACIÓN
+============================================================ */
+
+.modal-right {
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-category {
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--color-primary);
+    font-family: var(--font-primary);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.modal-right h2 {
+    margin: 0 0 18px;
+    font-family: var(--font-primary);
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1.1;
+}
+
+.modal-right h3 {
+    margin: 0 0 28px;
+    font-family: var(--font-primary);
+    font-size: 38px;
+    color: var(--color-primary);
+    font-weight: 800;
+}
+
+.modal-right p {
+    margin: 0 0 35px;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--fs-md);
+    line-height: 1.7;
+}
+
+
+/* ============================================================
+   MODAL TÍTULOS
+============================================================ */
+
+.modal-right h4 {
+    margin: 0 0 16px;
+    font-family: var(--font-primary);
+    font-size: var(--fs-md);
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   COLORES
+============================================================ */
+
+.colors {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 35px;
+}
+
+.color {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.color:hover {
+    transform: scale(1.12);
+    border-color: var(--color-primary);
+}
+
+.black  { background: #000000; }
+.gray   { background: #A6ADB5; }
+.green  { background: #0F766E; }
+.white  { background: #FFFFFF; }
+
+
+/* ============================================================
+   TALLAS
+============================================================ */
+
+.sizes {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 45px;
+}
+
+.sizes button {
+    width: 55px;
+    height: 55px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-primary);
+    cursor: pointer;
+    font-weight: 700;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.sizes button:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.sizes .active {
+    background: var(--color-primary);
+    color: #FFFFFF;
+    border-color: var(--color-primary);
+}
+
+
+/* ============================================================
+   BOTÓN MODAL CARRITO
+============================================================ */
+
+.add-cart-modal {
+    width: 100%;
+    height: 56px;
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--color-primary);
+    color: #FFFFFF;
+    font-family: var(--font-primary);
+    font-size: var(--fs-md);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: auto;
+    box-shadow: 0 4px 14px rgba(106, 44, 160, 0.28);
+}
+
+.add-cart-modal:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(106, 44, 160, 0.35);
+}
+
+.add-cart-modal:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+
+/* ============================================================
+   RESPONSIVE — CARRUSEL Y PÁGINA
+============================================================ */
+
+@media (max-width: 1250px) {
+    .featured-products {
+        padding: 20px 20px 50px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .featured-carousel-item {
+        width: calc((var(--w) - 36px) / 3);
+        min-width: calc((var(--w) - 36px) / 3);
+        max-width: calc((var(--w) - 36px) / 3);
+    }
+}
+
+@media (max-width: 780px) {
+    .featured-products {
+        padding: 18px 16px 45px;
+    }
+
+    .featured-header-centered {
+        margin-bottom: 20px;
+    }
+
+    .featured-header-centered h2 {
+        font-size: 28px;
+    }
+
+    .featured-carousel-container {
+        gap: 10px;
+    }
+
+    .featured-nav-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+    }
+
+    .featured-carousel-item {
+        width: calc((var(--w) - 14px) / 2);
+        min-width: calc((var(--w) - 14px) / 2);
+        max-width: calc((var(--w) - 14px) / 2);
+    }
+}
+
+@media (max-width: 520px) {
+    .featured-products {
+        padding: 14px 10px 36px;
+    }
+
+    .featured-header-centered h2 {
+        font-size: 24px;
+        letter-spacing: -0.5px;
+    }
+
+    .featured-carousel-container {
+        gap: 6px;
+    }
+
+    .featured-nav-btn {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+    }
+
+    .featured-carousel-item {
+        width: var(--w);
+        min-width: var(--w);
+        max-width: var(--w);
+    }
+}
+
+
+/* ============================================================
+   MODAL RESPONSIVE
+============================================================ */
+
+@media (max-width: 1000px) {
+    .product-modal {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+        max-height: 95vh;
+    }
+
+    .modal-left {
+        padding: 30px;
+    }
+
+    .modal-right {
+        padding: 35px;
+    }
+}

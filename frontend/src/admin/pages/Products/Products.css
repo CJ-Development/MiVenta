@@ -1,0 +1,180 @@
+/* =========================================================
+   PRODUCTS PAGE — miVenta.co
+   Rediseño moderno alineado con el mockup visual
+   ========================================================= */
+
+.products-page-wrapper {
+    position: relative;
+    width: 100%;
+    color: #0f172a;
+}
+
+/* FORMAS DECORATIVAS DE FONDO */
+.products-page-wrapper .dash-bg-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.products-page-wrapper .shape-top {
+    top: -60px;
+    right: -40px;
+    width: 320px;
+    height: 320px;
+    background: rgba(255, 79, 154, 0.08);
+}
+
+.products-page-wrapper .shape-bottom {
+    bottom: -60px;
+    left: -40px;
+    width: 380px;
+    height: 380px;
+    background: rgba(106, 44, 160, 0.06);
+}
+
+/* =========================================================
+   TARJETA PRINCIPAL DEL CONTENEDOR
+   ========================================================= */
+.products-main-card {
+    max-width: 1380px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.04);
+    padding: 28px 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   HERO HEADER
+   ========================================================= */
+.products-hero-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding-bottom: 4px;
+}
+
+.products-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.products-hero-icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6A2CA0, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 16px rgba(106, 44, 160, 0.28);
+    flex-shrink: 0;
+}
+
+.products-hero-titles {
+    display: flex;
+    flex-direction: column;
+}
+
+.products-hero-title {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 850;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.products-hero-subtitle {
+    margin: 3px 0 0;
+    font-size: 13.5px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* ACCIONES DEL HEADER */
+.products-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-create-simple-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #581c87, #6A2CA0);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 22px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(88, 28, 135, 0.25);
+    white-space: nowrap;
+}
+
+.btn-create-simple-pill:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 18px rgba(88, 28, 135, 0.35);
+    filter: brightness(1.05);
+}
+
+.btn-create-variable-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    color: #FF4F9A;
+    border: 1.5px solid #fbcfe8;
+    border-radius: 12px;
+    padding: 9px 20px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+}
+
+.btn-create-variable-pill:hover {
+    background: #fff1f2;
+    border-color: #f472b6;
+    transform: translateY(-1.5px);
+}
+
+@media (max-width: 768px) {
+    .products-main-card {
+        padding: 20px 18px;
+        border-radius: 18px;
+    }
+
+    .products-hero-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .products-hero-actions {
+        width: 100%;
+    }
+
+    .btn-create-simple-pill,
+    .btn-create-variable-pill {
+        flex: 1;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,43 @@
+/* =========================================================
+   ADMIN LAYOUT — miVenta.co
+   Layout sin sidebar, navegación superior y fondo limpio
+   ========================================================= */
+
+.mv-admin-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    background: #f8fafc;
+    font-family: inherit;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.mv-admin-content {
+    flex: 1;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 28px 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .mv-admin-content {
+        padding: 20px 18px 50px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mv-admin-content {
+        padding: 16px 12px 40px;
+    }
+}

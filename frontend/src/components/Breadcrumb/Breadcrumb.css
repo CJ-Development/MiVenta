@@ -1,0 +1,51 @@
+/* ============================================================
+   BREADCRUMB — miVenta.co
+   Paleta oficial de marca (violeta #6A2CA0)
+============================================================ */
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 18px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #64748b;
+    font-family: var(--font-primary, inherit);
+}
+
+.breadcrumb-home,
+.breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.18s ease;
+}
+
+.breadcrumb-home:hover,
+.breadcrumb-link:hover {
+    color: var(--color-primary, #6A2CA0);
+    text-decoration: none;
+}
+
+.breadcrumb-sep {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1;
+    margin: 0 1px;
+}
+
+.breadcrumb-segment {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.breadcrumb-current {
+    color: var(--color-primary, #6A2CA0);
+    font-weight: 600;
+}

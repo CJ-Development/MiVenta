@@ -1,0 +1,131 @@
+/* =========================================================
+   NOTIFICATIONS - VENTASYA
+   ========================================================= */
+
+.notifications-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.notification {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 320px;
+    max-width: 420px;
+    padding: 16px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease;
+    border-left: 4px solid;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification.notification-success {
+    border-left-color: #16a34a;
+}
+
+.notification.notification-success .notification-icon {
+    color: #16a34a;
+    background: #dcfce7;
+}
+
+.notification.notification-error {
+    border-left-color: #dc2626;
+}
+
+.notification.notification-error .notification-icon {
+    color: #dc2626;
+    background: #fee2e2;
+}
+
+.notification.notification-warning {
+    border-left-color: #f59e0b;
+}
+
+.notification.notification-warning .notification-icon {
+    color: #f59e0b;
+    background: #fef3c7;
+}
+
+.notification.notification-info {
+    border-left-color: #6A2CA0;
+}
+
+.notification.notification-info .notification-icon {
+    color: #6A2CA0;
+    background: #e0f7fa;
+}
+
+.notification-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #031927;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.notification-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.notification-close:hover {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+@media (max-width: 480px) {
+    .notifications-container {
+        right: 10px;
+        left: 10px;
+    }
+
+    .notification {
+        min-width: auto;
+        max-width: none;
+    }
+}
