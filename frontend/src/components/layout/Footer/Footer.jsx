@@ -152,7 +152,7 @@ function Footer() {
                             className="mv-footer-logo-img"
                         />
                     </Link>
-                    <p className="mv-footer-tagline">Comprar y vender es fácil, rápido y seguro.</p>
+                    <p className="mv-footer-tagline">Una forma sencilla de comprar en línea.</p>
                 </div>
 
             </div>
@@ -162,7 +162,7 @@ function Footer() {
             ======================== */}
             <div className="mv-footer-bottom">
                 <div className="mv-footer-bottom-inner">
-                    <p>© {new Date().getFullYear()} miVenta.co. Todos los derechos reservados.</p>
+                    <p>© {new Date().getFullYear()} miVenta. Todos los derechos reservados.</p>
                 </div>
             </div>
         </footer>
