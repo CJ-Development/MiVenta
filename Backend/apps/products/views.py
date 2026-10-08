@@ -122,6 +122,19 @@ class ProductoCompletoView(APIView):
                 producto_simple=producto_simple,
             )
 
+            try:
+                from apps.users.activity import registrar_actividad
+                accion_label = "Edición de producto" if id is not None else "Creación de producto"
+                registrar_actividad(
+                    accion=accion_label,
+                    elemento=producto.nombre,
+                    usuario=request.user if request.user.is_authenticated else None,
+                    tipo_accion="producto",
+                    detalles=f"Estado: {producto.estado} · Precio: ${int(producto.precio or 0):,}",
+                )
+            except Exception:
+                pass
+
             return Response(ProductoSerializer(producto).data, status=status.HTTP_200_OK if id is not None else status.HTTP_201_CREATED)
         except Producto.DoesNotExist:
             return Response({"detail": "Producto no encontrado."}, status=404)
@@ -329,21 +342,42 @@ class ProductoDetalleView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         producto.refresh_from_db()
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Edición de producto",
+                elemento=producto.nombre,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="producto",
+            )
+        except Exception:
+            pass
         return Response(ProductoSerializer(producto).data)
 
     def delete(self, request, id):
         producto = get_object_or_404(Producto, id_producto=id)
         
-        # Validar confirmación exacta
+        # Validar confirmación si fue enviada
         confirmacion = request.data.get("confirmacion_nombre")
-        if confirmacion != producto.nombre:
+        if confirmacion and confirmacion != producto.nombre:
             return Response(
-                {"detail": f"El nombre '{confirmacion}' no coincide exactamente con '{producto.nombre}'."},
+                {"detail": f"El nombre '{confirmacion}' no coincide con '{producto.nombre}'."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        nombre_prod = producto.nombre
         try:
             ProductoService.eliminar_fisico(id)
+            try:
+                from apps.users.activity import registrar_actividad
+                registrar_actividad(
+                    accion="Eliminación de producto",
+                    elemento=nombre_prod,
+                    usuario=request.user if request.user.is_authenticated else None,
+                    tipo_accion="producto",
+                )
+            except Exception:
+                pass
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_409_CONFLICT)
@@ -356,8 +390,18 @@ class ProductoArchivarView(APIView):
     get_permissions = _permisos_admin_en_mutacion
 
     def post(self, request, id):
-        get_object_or_404(Producto, id_producto=id)
+        prod = get_object_or_404(Producto, id_producto=id)
         ProductoService.archivar(id)
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Archivo de producto",
+                elemento=prod.nombre,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="producto",
+            )
+        except Exception:
+            pass
         return Response({"estado": "archivado"}, status=status.HTTP_200_OK)
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -366,8 +410,19 @@ class ProductoReactivarView(APIView):
     get_permissions = _permisos_admin_en_mutacion
 
     def post(self, request, id):
-        get_object_or_404(Producto, id_producto=id)
-        return Response(ProductoSerializer(ProductoService.reactivar(id)).data)
+        prod = get_object_or_404(Producto, id_producto=id)
+        reactivado = ProductoService.reactivar(id)
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Reactivación de producto",
+                elemento=prod.nombre,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="producto",
+            )
+        except Exception:
+            pass
+        return Response(ProductoSerializer(reactivado).data)
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")

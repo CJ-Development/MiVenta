@@ -692,8 +692,38 @@
     color: #16a34a;
 }
 
+.activity-status-pill.oferta {
+    background: #ffedd5;
+    color: #ea580c;
+}
+
+.activity-status-pill.general {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.activity-row-interactive {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.activity-row-interactive:hover {
+    background-color: #faf5ff;
+}
+
+.activity-element-col span {
+    color: #475569;
+    font-weight: 600;
+}
+
 .activity-row-arrow {
     color: #94a3b8;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.activity-row-interactive:hover .activity-row-arrow {
+    color: #6A2CA0;
+    transform: translateX(2px);
 }
 
 /* =========================================================

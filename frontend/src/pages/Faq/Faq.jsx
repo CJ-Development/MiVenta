@@ -53,11 +53,11 @@ const faqData = [
         questions: [
             {
                 q: "¿Puedo cambiar una prenda si no me queda la talla?",
-                a: "¡Claro que sí! Tienes hasta 30 días calendario después de recibir el producto para solicitar un cambio por talla, siempre y cuando el artículo esté sin uso, con etiquetas y empaque original."
+                a: "Plazo: 5 días hábiles\nProducto sin uso y con empaque original\nNo aplica a productos de uso personal, higiene o personalizados\nReembolso en 30 días calendario"
             },
             {
                 q: "¿Qué debo hacer si recibo un producto defectuoso?",
-                a: "Si el artículo presenta defectos de fábrica, por favor contáctanos dentro de las primeras 48 horas tras recibirlo. Lo reemplazaremos sin costo adicional o procesaremos un reembolso."
+                a: "Si el artículo presenta defectos de fábrica, por favor contáctanos. Lo reemplazaremos o procesaremos un reembolso."
             }
         ]
     },
@@ -68,7 +68,7 @@ const faqData = [
         questions: [
             {
                 q: "¿Los productos tienen garantía?",
-                a: "Sí, todos nuestros productos cuentan con garantía directa que cubre defectos de fabricación (usualmente de 1 a 3 meses, dependiendo de la marca). No cubre daños por mal uso."
+                a: "Sí, todos nuestros productos cuentan con garantía directa que cubre defectos de fabricación. No cubre daños por mal uso."
             },
             {
                 q: "¿Tienen tienda física?",
@@ -242,7 +242,7 @@ function Faq() {
                                 Si no encontraste la respuesta que buscabas,<br />nuestro equipo está listo para ayudarte.
                             </p>
                             <a
-                                href="https://wa.me/573181174546"
+                                href="https://wa.me/573004726258"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{

@@ -431,6 +431,7 @@ function Products() {
             const ids = new Set();
 
             (ofertas || []).forEach((oferta) => {
+                if (oferta.activa === false) return;
 
                 const id =
                     oferta.producto?.id_producto ||
@@ -439,17 +440,36 @@ function Products() {
                     oferta.producto_id ||
                     null;
 
-
                 if (id) {
                     ids.add(id);
                 }
 
-            });
+                // Categorías de la oferta
+                const catIdsOferta = new Set();
+                if (Array.isArray(oferta.categorias_detalle)) {
+                    oferta.categorias_detalle.forEach((c) => catIdsOferta.add(c.id_categoria));
+                }
+                if (Array.isArray(oferta.categorias)) {
+                    oferta.categorias.forEach((c) => catIdsOferta.add(typeof c === "object" ? c.id_categoria : c));
+                }
+                if (Array.isArray(oferta.categorias_ids)) {
+                    oferta.categorias_ids.forEach((cId) => catIdsOferta.add(cId));
+                }
 
+                if (catIdsOferta.size > 0 && Array.isArray(productos)) {
+                    productos.forEach((p) => {
+                        const cId = p.categoria?.id_categoria;
+                        const pId = p.categoria?.id_categoria_padre || p.categoria?.categoria_padre?.id_categoria;
+                        if ((cId && catIdsOferta.has(cId)) || (pId && catIdsOferta.has(pId))) {
+                            ids.add(p.id_producto);
+                        }
+                    });
+                }
+            });
 
             return ids;
 
-        }, [ofertas]);
+        }, [ofertas, productos]);
 
 
     /* =========================================================
@@ -461,43 +481,78 @@ function Products() {
 
             const map = new Map();
 
-
             (ofertas || []).forEach((oferta) => {
+                if (oferta.activa === false) return;
 
-                const id =
+                const idDirecto =
                     oferta.producto?.id_producto ||
                     oferta.producto_detalle?.id_producto ||
                     oferta.id_producto ||
                     oferta.producto_id ||
                     null;
 
+                const catIdsOferta = new Set();
+                if (Array.isArray(oferta.categorias_detalle)) {
+                    oferta.categorias_detalle.forEach((c) => catIdsOferta.add(c.id_categoria));
+                }
+                if (Array.isArray(oferta.categorias)) {
+                    oferta.categorias.forEach((c) => catIdsOferta.add(typeof c === "object" ? c.id_categoria : c));
+                }
+                if (Array.isArray(oferta.categorias_ids)) {
+                    oferta.categorias_ids.forEach((cId) => catIdsOferta.add(cId));
+                }
 
-                if (!id) return;
+                const valor = Number(
+                    oferta.porcentaje ||
+                    oferta.valor ||
+                    oferta.descuento ||
+                    0
+                );
 
+                if (valor <= 0) return;
 
-                const porcentaje =
-                    Number(
-                        oferta.porcentaje ||
-                        oferta.descuento ||
+                const idsAfectados = new Set();
+                if (idDirecto) idsAfectados.add(idDirecto);
+
+                if (catIdsOferta.size > 0 && Array.isArray(productos)) {
+                    productos.forEach((p) => {
+                        const cId = p.categoria?.id_categoria;
+                        const pId = p.categoria?.id_categoria_padre || p.categoria?.categoria_padre?.id_categoria;
+                        if ((cId && catIdsOferta.has(cId)) || (pId && catIdsOferta.has(pId))) {
+                            idsAfectados.add(p.id_producto);
+                        }
+                    });
+                }
+
+                idsAfectados.forEach((prodId) => {
+                    const prodObj = (productos || []).find((p) => p.id_producto === prodId);
+                    const original = Number(
+                        prodObj?.precio ??
+                        oferta.producto_detalle?.precio ??
+                        oferta.producto?.precio ??
                         0
                     );
 
+                    let porcentaje = 0;
+                    if (oferta.tipo_descuento === "porcentaje" || (!oferta.tipo_descuento && valor <= 100)) {
+                        porcentaje = Math.round(valor);
+                    } else if (original > 0) {
+                        porcentaje = Math.round((valor / original) * 100);
+                    }
 
-                if (porcentaje > 0) {
-
-                    map.set(
-                        id,
-                        porcentaje
-                    );
-
-                }
+                    if (porcentaje > 0) {
+                        const actual = map.get(prodId);
+                        if (!actual || porcentaje > actual) {
+                            map.set(prodId, porcentaje);
+                        }
+                    }
+                });
 
             });
 
-
             return map;
 
-        }, [ofertas]);
+        }, [ofertas, productos]);
 
 
     /* =========================================================
@@ -827,22 +882,22 @@ function Products() {
         const isCategoria = currentPath.startsWith("/categoria/");
         const isProducts = currentPath === "/products";
 
-        let title = "Productos";
-        let description = "Descubre todos los productos de Baúl Mágico Shop. Explora nuestra colección de moda, categorías y ofertas.";
+        let title = "Catálogo de Productos";
+        let description = "Descubre todos los productos en MiVenta. Explora nuestra amplia colección de moda, ropa deportiva y ofertas exclusivas con envíos a toda Colombia.";
         let path = currentPath;
         let noindex = false;
 
         if (isHombre) {
             title = "Moda para Hombre";
-            description = "Explora nuestra colección de moda masculina en Baúl Mágico Shop. Encuentra ropa, accesorios y más para el hombre moderno.";
+            description = "Explora nuestra colección de moda masculina y ropa deportiva para hombre en MiVenta. Encuentra prendas con estilo, comodidad y calidad garantizada.";
             path = "/hombre";
         } else if (isMujer) {
             title = "Moda para Mujer";
-            description = "Descubre las últimas tendencias en moda femenina en Baúl Mágico Shop. Ropa, accesorios y estilo para la mujer contemporánea.";
+            description = "Descubre las últimas tendencias en moda femenina y ropa deportiva para mujer en MiVenta. Prendas exclusivas, calidad y envíos a todo el país.";
             path = "/mujer";
         } else if (isNino) {
             title = "Moda Infantil";
-            description = "Explora nuestra colección de moda infantil en Baúl Mágico Shop. Ropa y accesorios para niños con estilo y comodidad.";
+            description = "Explora nuestra colección de moda infantil y ropa para niños en MiVenta. Comodidad, durabilidad y estilo para los más pequeños.";
             path = "/nino";
         } else if (isCategoria && slug) {
             const catActual = categorias.find(
@@ -850,12 +905,12 @@ function Products() {
             );
             if (catActual) {
                 title = catActual.nombre;
-                description = `Descubre nuestra colección de ${catActual.nombre} en Baúl Mágico Shop. Encuentra los mejores productos y ofertas en esta categoría.`;
+                description = `Descubre nuestra colección de ${catActual.nombre} en MiVenta. Encuentra los mejores productos, calidad y precios en esta categoría.`;
                 path = `/categoria/${catActual.slug}`;
             }
         } else if (isProducts) {
-            title = "Productos";
-            description = "Descubre todos los productos de Baúl Mágico Shop. Explora nuestra colección de moda, categorías y ofertas.";
+            title = "Catálogo de Productos";
+            description = "Descubre todos los productos en MiVenta. Explora nuestra colección de moda, ropa deportiva y promociones con envío rápido a toda Colombia.";
             path = "/products";
         }
 

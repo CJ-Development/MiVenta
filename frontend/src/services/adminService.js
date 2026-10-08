@@ -24,7 +24,8 @@ export const saveProductComplete = (productId, formData) =>
 export const getBlobUploadUrl = (filename) =>
     api.post("/products/blob-upload-url/", { filename });
 
-export const archiveProduct = (id) => api.delete(`/products/${id}/`);
+export const archiveProduct = (id) => api.post(`/products/${id}/archivar/`);
+export const deleteProduct = (id, nombre = "") => api.delete(`/products/${id}/`, { data: { confirmacion_nombre: nombre } });
 export const reactivateProduct = (id) => api.post(`/products/${id}/reactivar/`);
 export const reactivateProductById = reactivateProduct;
 
@@ -90,19 +91,24 @@ export const updateCategory = (id, data) => {
     );
 };
 
+export const archiveCategory = (id, { cascade = true } = {}) => {
+    return api.post(
+        `/categories/${id}/archivar/`,
+        null,
+        {
+            params: { cascade }
+        }
+    );
+};
+
 export const deleteCategory = (
     id,
-    { cascade = false } = {}
+    nombre = ""
 ) => {
-
-    const params = cascade
-        ? { cascade: true }
-        : {};
-
     return api.delete(
         `/categories/${id}/`,
         {
-            params
+            data: { confirmacion_nombre: nombre }
         }
     );
 };

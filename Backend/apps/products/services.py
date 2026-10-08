@@ -90,9 +90,10 @@ class ProductoService:
             qs = qs.filter(estado="activo").filter(variante__stock__gt=0).distinct()
 
         if tendencia:
-            # Calcular cantidad vendida por producto
+            # Calcular cantidad vendida por producto SOLO de pedidos en proceso ("pagado", "enviado") o "entregado"
             ventas_por_producto = (
                 DetalleCompra.objects
+                .filter(compra__estado_compra__in=["pagado", "enviado", "entregado"])
                 .values('variante__producto_id')
                 .annotate(total_vendido=Sum('cantidad'))
                 .order_by('-total_vendido')

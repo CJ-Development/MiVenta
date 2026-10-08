@@ -45,6 +45,24 @@ const formatearFechaHoy = () => {
     return `Hoy, ${dia} de ${mes} de ${anio}`;
 };
 
+const formatearFechaHora = (fecha) => {
+    if (!fecha) return "Reciente";
+    try {
+        const d = new Date(fecha);
+        if (isNaN(d.getTime())) return String(fecha);
+        return d.toLocaleString("es-CO", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    } catch {
+        return String(fecha);
+    }
+};
+
 // Formatear ayer
 const formatearFechaAyer = () => {
     const ayer = new Date();
@@ -87,6 +105,7 @@ function Dashboard() {
     });
 
     const [allOrders, setAllOrders] = useState([]);
+    const [actividades, setActividades] = useState([]);
     const [dateFilter, setDateFilter] = useState("hoy"); // "hoy" | "ayer" | "7dias" | "30dias" | "este_mes" | "todo" | "custom"
     const [customDate, setCustomDate] = useState("");
     const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
@@ -116,26 +135,62 @@ function Dashboard() {
         inicioMes.setHours(0, 0, 0, 0);
 
         try {
-            const [productos, pedidos, usuarios, pocoStock] = await Promise.all([
+            const [productos, pedidos, usuarios, pocoStock, actRes] = await Promise.all([
                 api.get("products/").catch(() => ({ data: [] })),
                 api.get("orders/").catch(() => ({ data: [] })),
                 api.get("users/").catch(() => ({ data: [] })),
                 getLowStockVariants().catch(() => ({ data: [] })),
+                api.get("users/actividades/").catch(() => ({ data: [] })),
             ]);
 
             const compras = pedidos.data || [];
             setAllOrders(compras);
 
+            // Actividades reales del sistema
+            const rawActividades = Array.isArray(actRes.data) ? actRes.data : [];
+            if (rawActividades.length > 0) {
+                setActividades(rawActividades);
+            } else {
+                // Fallback con datos reales existentes
+                const sintetizadas = [];
+                (pedidos.data || []).slice(0, 5).forEach((p) => {
+                    sintetizadas.push({
+                        id_actividad: `order-${p.id_compra}`,
+                        accion: `Pedido ${p.estado_compra || "recibido"}`,
+                        elemento: p.referencia || `#MVC-${p.id_compra}`,
+                        nombre_usuario: p.nombre_cliente || "Cliente",
+                        tipo_accion: "pedido",
+                        fecha: p.fecha_compra || new Date().toISOString(),
+                    });
+                });
+                (productos.data || []).slice(0, 4).forEach((p) => {
+                    sintetizadas.push({
+                        id_actividad: `prod-${p.id_producto}`,
+                        accion: p.estado === "archivado" ? "Archivo de producto" : "Creación de producto",
+                        elemento: p.nombre,
+                        nombre_usuario: "Administrador",
+                        tipo_accion: "producto",
+                        fecha: p.created_at || new Date().toISOString(),
+                    });
+                });
+                setActividades(sintetizadas);
+            }
+
+            // Solo contabilizar pedidos procesados o entregados (NO pendientes, cancelados ni fallidos)
+            const esVentaContabilizable = (estado) => {
+                const norm = String(estado || "").toLowerCase().trim();
+                return ["en_proceso", "en proceso", "pagado", "enviado", "entregado"].includes(norm);
+            };
+
             const ventasMes = compras
                 .filter(
                     (compra) =>
                         new Date(compra.fecha_compra) >= inicioMes &&
-                        compra.estado_compra !== "cancelado"
+                        esVentaContabilizable(compra.estado_compra)
                 )
                 .reduce((acc, compra) => acc + Number(compra.total || 0), 0);
 
-            // Total real o fallback elegante para visualización
-            const totalVentasFinal = ventasMes > 0 ? ventasMes : 160000;
+            const totalVentasFinal = ventasMes;
             const totalProductosFinal = productos.data?.length ? productos.data.length : 5;
             const totalPedidosFinal = compras.length ? compras.length : 1;
             const totalUsuariosFinal = usuarios.data?.length ? usuarios.data.length : 2;
@@ -296,8 +351,12 @@ function Dashboard() {
 
     // Ventas y pedidos del período seleccionado
     const ventasFiltradas = useMemo(() => {
+        const esVentaContabilizable = (estado) => {
+            const norm = String(estado || "").toLowerCase().trim();
+            return ["en_proceso", "en proceso", "pagado", "enviado", "entregado"].includes(norm);
+        };
         return filteredOrders
-            .filter((o) => o && o.estado_compra !== "cancelado")
+            .filter((o) => o && esVentaContabilizable(o.estado_compra))
             .reduce((acc, o) => acc + Number(o.total || 0), 0);
     }, [filteredOrders]);
 
@@ -331,41 +390,7 @@ function Dashboard() {
             ? filteredOrders.slice(0, 5)
             : activeOrdersList.slice(0, 5);
 
-    // Actividades recientes dinámicas
-    const mockActivities = [
-        {
-            id: 1,
-            fecha: "05/05/2025 10:24 a. m.",
-            descripcion: "Se registró un nuevo pedido #MVC-00001",
-            usuario: "Test User",
-            estado: "Pedido",
-            tipoEstado: "pedido",
-        },
-        {
-            id: 2,
-            fecha: "05/05/2025 09:15 a. m.",
-            descripcion: "Se creó el producto Ropa deportiva",
-            usuario: "Jhon Jairo",
-            estado: "Producto",
-            tipoEstado: "producto",
-        },
-        {
-            id: 3,
-            fecha: "04/05/2025 08:32 p. m.",
-            descripcion: "Se actualizó la categoría Ropa",
-            usuario: "Jhon Jairo",
-            estado: "Categoría",
-            tipoEstado: "categoria",
-        },
-        {
-            id: 4,
-            fecha: "04/05/2025 03:12 p. m.",
-            descripcion: "Nuevo usuario registrado: Andrea García",
-            usuario: "Sistema",
-            estado: "Usuario",
-            tipoEstado: "usuario",
-        },
-    ];
+
 
     if (loading) {
         return (
@@ -729,35 +754,67 @@ function Dashboard() {
                             <table className="activity-table">
                                 <thead>
                                     <tr>
-                                        <th>Fecha</th>
-                                        <th>Descripción</th>
-                                        <th>Usuario</th>
-                                        <th>Estado</th>
+                                        <th>Acción realizada</th>
+                                        <th>Elemento afectado</th>
+                                        <th>Usuario administrador</th>
+                                        <th>Fecha y hora</th>
+                                        <th>Tipo de acción</th>
                                         <th style={{ width: 40 }}></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {mockActivities.map((act) => (
-                                        <tr key={act.id}>
-                                            <td className="activity-date-col">
-                                                <span>{act.fecha}</span>
-                                            </td>
-                                            <td className="activity-desc-col">
-                                                <span>{act.descripcion}</span>
-                                            </td>
-                                            <td className="activity-user-col">
-                                                <span>{act.usuario}</span>
-                                            </td>
-                                            <td className="activity-status-col">
-                                                <span className={`activity-status-pill ${act.tipoEstado}`}>
-                                                    {act.estado}
-                                                </span>
-                                            </td>
-                                            <td className="activity-action-col">
-                                                <ChevronRight size={15} className="activity-row-arrow" />
+                                    {actividades.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} style={{ textAlign: "center", padding: "32px 16px", color: "#64748b" }}>
+                                                No hay actividades registradas en el sistema todavía.
                                             </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        actividades.slice(0, 10).map((act) => {
+                                            const rutaDestino =
+                                                act.tipo_accion === "producto"
+                                                    ? "/admin/products"
+                                                    : act.tipo_accion === "categoria"
+                                                    ? "/admin/categories"
+                                                    : act.tipo_accion === "pedido"
+                                                    ? "/admin/orders"
+                                                    : act.tipo_accion === "oferta"
+                                                    ? "/admin/offers"
+                                                    : act.tipo_accion === "usuario"
+                                                    ? "/admin/users"
+                                                    : "/admin";
+
+                                            return (
+                                                <tr
+                                                    key={act.id_actividad || act.id}
+                                                    onClick={() => navigate(rutaDestino)}
+                                                    className="activity-row-interactive"
+                                                    title={`Ir a ${act.tipo_accion || "sección"}`}
+                                                >
+                                                    <td className="activity-action-col">
+                                                        <strong>{act.accion}</strong>
+                                                    </td>
+                                                    <td className="activity-element-col">
+                                                        <span>{act.elemento}</span>
+                                                    </td>
+                                                    <td className="activity-user-col">
+                                                        <span>{act.nombre_usuario || "Administrador"}</span>
+                                                    </td>
+                                                    <td className="activity-date-col">
+                                                        <span>{formatearFechaHora(act.fecha)}</span>
+                                                    </td>
+                                                    <td className="activity-status-col">
+                                                        <span className={`activity-status-pill ${act.tipo_accion || "general"}`}>
+                                                            {act.tipo_accion ? act.tipo_accion.charAt(0).toUpperCase() + act.tipo_accion.slice(1) : "General"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="activity-arrow-col">
+                                                        <ChevronRight size={15} className="activity-row-arrow" />
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
                                 </tbody>
                             </table>
                         </div>

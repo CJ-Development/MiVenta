@@ -102,7 +102,7 @@ function Cart() {
 
             <SEO
                 title="Carrito de compras"
-                description="Revisa los productos en tu carrito de compras en Baúl Mágico Shop. Finaliza tu compra de forma segura."
+                description="Revisa los productos en tu carrito de compras en MiVenta. Finaliza tu pedido de forma fácil y 100% segura."
                 path="/cart"
                 noindex={true}
             />

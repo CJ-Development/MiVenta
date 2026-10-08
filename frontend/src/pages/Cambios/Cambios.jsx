@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./Cambios.css";
 import { X } from "lucide-react";
+import SEO from "../../components/SEO/SEO";
 
 function Cambios() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,14 +25,14 @@ function Cambios() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const mensaje = `Hola Baúl Mágico Shop, deseo solicitar un cambio o devolución.
+        const mensaje = `Hola MiVenta, deseo solicitar un cambio o devolución.
         
 *Nombre:* ${nombre}
 *Número de pedido/contacto:* ${numero}
 *Motivo de la solicitud:* ${razon}`;
 
         const encodedMessage = encodeURIComponent(mensaje);
-        const whatsappUrl = `https://wa.me/573181174546?text=${encodedMessage}`;
+        const whatsappUrl = `https://wa.me/573004726258?text=${encodedMessage}`;
 
         window.open(whatsappUrl, "_blank");
         handleCloseModal();
@@ -39,6 +40,11 @@ function Cambios() {
 
     return (
         <div className="cambios-page">
+            <SEO
+                title="Cambios y Devoluciones"
+                description="Conoce nuestras políticas y solicita cambios y devoluciones fácilmente en MiVenta. Garantía y respaldo en tus compras."
+                path="/cambios"
+            />
             <div className="cambios-hero">
                 <h1>Cambios y Devoluciones</h1>
                 <p>Tu satisfacción es nuestra prioridad. Nuestro proceso es fácil, rápido y sin complicaciones.</p>

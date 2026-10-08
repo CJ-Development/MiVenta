@@ -16,6 +16,7 @@
     import { useAuth } from "../../hooks/useAuth";
 
     import { getMyOrders, getOrderDetail } from "../../services/clientService";
+    import SEO from "../../components/SEO/SEO";
 
     import "./Orders.css";
 
@@ -150,6 +151,12 @@
 
             return (
                 <main className="orders-page">
+                    <SEO
+                        title="Mis Pedidos"
+                        description="Consulta el estado y el detalle de tus compras en MiVenta."
+                        path="/mis-pedidos"
+                        noindex={true}
+                    />
                     <div className="orders-container">
                         <header className="orders-header">
                             <h1>
@@ -174,6 +181,12 @@
 
         return (
             <main className="orders-page">
+                <SEO
+                    title="Mis Pedidos"
+                    description="Consulta el estado y el detalle de tus compras en MiVenta."
+                    path="/mis-pedidos"
+                    noindex={true}
+                />
                 <div className="orders-container">
 
                     <header className="orders-header">

@@ -579,17 +579,30 @@
     box-shadow: 0 3px 8px rgba(106, 44, 160, 0.25);
 }
 
-.action-icon-pill-btn.copy {
-    background: #f5f3ff;
-    border-color: #ede9fe;
-    color: #6A2CA0;
+.action-icon-pill-btn.archive {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #64748b;
 }
-.action-icon-pill-btn.copy:hover {
-    background: #6A2CA0;
+.action-icon-pill-btn.archive:hover {
+    background: #475569;
     color: #ffffff;
-    border-color: #6A2CA0;
+    border-color: #475569;
     transform: translateY(-1.5px);
-    box-shadow: 0 3px 8px rgba(106, 44, 160, 0.25);
+    box-shadow: 0 3px 8px rgba(71, 85, 105, 0.25);
+}
+
+.action-icon-pill-btn.reactivate {
+    background: #f0fdf4;
+    border-color: #dcfce7;
+    color: #16a34a;
+}
+.action-icon-pill-btn.reactivate:hover {
+    background: #16a34a;
+    color: #ffffff;
+    border-color: #16a34a;
+    transform: translateY(-1.5px);
+    box-shadow: 0 3px 8px rgba(22, 163, 74, 0.25);
 }
 
 .action-icon-pill-btn.delete {
@@ -809,4 +822,176 @@
         align-items: center;
         gap: 12px;
     }
+}
+
+/* =========================================================
+   MODAL DE CONFIRMACIÓN DE ELIMINACIÓN DE PRODUCTO
+   ========================================================= */
+.product-table-wrapper .modal-overlay,
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999 !important;
+    padding: 20px;
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.cat-delete-modal-card {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+    overflow: hidden;
+    animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-danger-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    position: relative;
+}
+
+.modal-danger-header .danger-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #fff1f2;
+    color: #f43f5e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.modal-danger-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 750;
+    color: #0f172a;
+}
+
+.modal-danger-header p {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: #64748b;
+}
+
+.modal-close-icon {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: color 0.15s ease;
+}
+
+.modal-close-icon:hover {
+    color: #0f172a;
+}
+
+.modal-danger-body {
+    padding: 22px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.warning-text {
+    margin: 0;
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.warning-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-radius: 12px;
+    color: #b45309;
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.warning-banner svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.modal-btn-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.secondary-btn {
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 11px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.secondary-btn:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.danger-btn {
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 11px;
+    border: none;
+    background: #f43f5e;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.danger-btn:hover {
+    background: #e11d48;
 }

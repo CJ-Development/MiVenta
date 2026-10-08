@@ -151,3 +151,39 @@ class Direccion(models.Model):
 
     def __str__(self):
         return f"{self.usuario.email} - {self.direccion}"
+
+
+class Actividad(models.Model):
+    id_actividad = models.AutoField(primary_key=True)
+    accion = models.CharField(max_length=200)
+    elemento = models.CharField(max_length=255)
+    usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="actividades",
+        db_column="id_usuario"
+    )
+    nombre_usuario = models.CharField(max_length=150, default="Administrador")
+    tipo_accion = models.CharField(
+        max_length=50,
+        default="general",
+        choices=[
+            ("producto", "Producto"),
+            ("categoria", "Categoría"),
+            ("oferta", "Oferta"),
+            ("pedido", "Pedido"),
+            ("usuario", "Usuario"),
+            ("general", "General"),
+        ]
+    )
+    detalles = models.TextField(blank=True, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "actividades"
+        ordering = ["-fecha"]
+
+    def __str__(self):
+        return f"{self.accion} - {self.elemento} ({self.fecha})"

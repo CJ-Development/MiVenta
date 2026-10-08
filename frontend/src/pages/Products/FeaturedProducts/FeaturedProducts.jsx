@@ -115,39 +115,64 @@
                 if (tsInicio !== null && ahora < tsInicio) return;
                 if (tsFin !== null && ahora > tsFin) return;
 
-                const id =
+                const idDirecto =
                     oferta.producto?.id_producto ||
                     oferta.producto_detalle?.id_producto ||
                     oferta.id_producto ||
                     oferta.producto_id ||
                     null;
 
-                if (!id) return;
-
-                const original = Number(
-                    oferta.producto_detalle?.precio ??
-                    oferta.producto?.precio ??
-                    0
-                );
+                const catIdsOferta = new Set();
+                if (Array.isArray(oferta.categorias_detalle)) {
+                    oferta.categorias_detalle.forEach((c) => catIdsOferta.add(c.id_categoria));
+                }
+                if (Array.isArray(oferta.categorias)) {
+                    oferta.categorias.forEach((c) => catIdsOferta.add(typeof c === "object" ? c.id_categoria : c));
+                }
+                if (Array.isArray(oferta.categorias_ids)) {
+                    oferta.categorias_ids.forEach((cId) => catIdsOferta.add(cId));
+                }
 
                 const valor = Number(oferta.valor);
                 if (!Number.isFinite(valor) || valor <= 0) return;
 
-                let porcentaje = 0;
+                // Identificar todos los productos a los que aplica esta oferta
+                const idsAfectados = new Set();
+                if (idDirecto) idsAfectados.add(idDirecto);
 
-                if (oferta.tipo_descuento === "porcentaje") {
-                    porcentaje = Math.round(valor);
-                } else if (original > 0) {
-                    porcentaje = Math.round((valor / original) * 100);
+                if (catIdsOferta.size > 0 && Array.isArray(products)) {
+                    products.forEach((p) => {
+                        const cId = p.categoria?.id_categoria;
+                        const pId = p.categoria?.id_categoria_padre || p.categoria?.categoria_padre?.id_categoria;
+                        if ((cId && catIdsOferta.has(cId)) || (pId && catIdsOferta.has(pId))) {
+                            idsAfectados.add(p.id_producto);
+                        }
+                    });
                 }
 
-                if (porcentaje > 0) {
-                    // Si ya hay una oferta con mejor descuento, la conservamos.
-                    const actual = map.get(id);
-                    if (!actual || porcentaje > actual) {
-                        map.set(id, porcentaje);
+                idsAfectados.forEach((prodId) => {
+                    const prodObj = (products || []).find((p) => p.id_producto === prodId);
+                    const original = Number(
+                        prodObj?.precio ??
+                        oferta.producto_detalle?.precio ??
+                        oferta.producto?.precio ??
+                        0
+                    );
+
+                    let porcentaje = 0;
+                    if (oferta.tipo_descuento === "porcentaje") {
+                        porcentaje = Math.round(valor);
+                    } else if (original > 0) {
+                        porcentaje = Math.round((valor / original) * 100);
                     }
-                }
+
+                    if (porcentaje > 0) {
+                        const actual = map.get(prodId);
+                        if (!actual || porcentaje > actual) {
+                            map.set(prodId, porcentaje);
+                        }
+                    }
+                });
 
             });
 

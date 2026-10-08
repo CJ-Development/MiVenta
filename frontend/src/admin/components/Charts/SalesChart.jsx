@@ -45,8 +45,12 @@ function SalesChart({ rawOrders = [], totalSales = 160000, externalPeriod = null
     // Calcular datos de ventas dinámicamente según las órdenes reales
     const { labels, dataPoints, maxVal, totalPeriodo } = useMemo(() => {
         const ahora = new Date();
+        const esVentaContabilizable = (estado) => {
+            const norm = String(estado || "").toLowerCase().trim();
+            return ["en_proceso", "en proceso", "pagado", "enviado", "entregado"].includes(norm);
+        };
         const validOrders = (rawOrders || []).filter(
-            (o) => o && o.estado_compra !== "cancelado"
+            (o) => o && esVentaContabilizable(o.estado_compra)
         );
 
         let lbls = [];

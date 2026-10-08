@@ -35,6 +35,19 @@ class CompraView(APIView):
         serializer = CompraSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         compra = CompraService.crear(serializer.validated_data)
+
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Nuevo pedido recibido",
+                elemento=f"Pedido #{compra.id_compra}",
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="pedido",
+                detalles=f"Cliente: {compra.nombre_cliente or 'Cliente'} · Total: ${int(compra.total or 0):,}",
+            )
+        except Exception:
+            pass
+
         return Response(
             CompraSerializer(compra).data,
             status=status.HTTP_201_CREATED,
@@ -63,6 +76,20 @@ class CompraDetalleView(APIView):
             k: v for k, v in request.data.items() if k in self.CAMPOS_PERMITIDOS
         }
         compra_actualizada = CompraService.actualizar(id, data_filtrada)
+
+        try:
+            from apps.users.activity import registrar_actividad
+            accion_txt = f"Pedido marcado como {nuevo_estado.replace('_', ' ').title()}" if nuevo_estado else "Actualización de pedido"
+            registrar_actividad(
+                accion=accion_txt,
+                elemento=f"Pedido #{id}",
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="pedido",
+                detalles=f"Cliente: {compra.nombre_cliente or 'Cliente'} · Total: ${int(compra.total or 0):,}",
+            )
+        except Exception:
+            pass
+
         return Response(CompraSerializer(compra_actualizada).data)
 
     def delete(self, request, id):
@@ -344,6 +371,19 @@ class CheckoutView(APIView):
                         "departamento": direccion.departamento,
                         "codigo_postal": direccion.codigo_postal or "",
                     }
+
+                # Registrar actividad del pedido
+                try:
+                    from apps.users.activity import registrar_actividad
+                    registrar_actividad(
+                        accion="Nuevo pedido recibido (Checkout)",
+                        elemento=f"Pedido #{compra.id_compra}",
+                        usuario=usuario,
+                        tipo_accion="pedido",
+                        detalles=f"Cliente: {nombre_cliente or 'Cliente'} · Total: ${int(total):,}",
+                    )
+                except Exception:
+                    pass
 
                 return Response(
                     response_data,

@@ -380,14 +380,47 @@ function ProductDetail({ productId }) {
         if (!producto) return null;
         const foto = galeria.find((g) => g.tipo !== "video" && !isVideoResource(g.imagen));
         const ogImage = foto ? mediaUrl(foto.imagen, NoImage) : (producto.imagen_principal ? mediaUrl(producto.imagen_principal, NoImage) : NoImage);
+        const cleanDesc = (producto.descripcion || "").replace(/<[^>]+>/g, "").trim();
+        const shortDesc = cleanDesc.slice(0, 160) || "Encuentra la mejor ropa deportiva y moda en MiVenta con envíos a toda Colombia.";
+        const priceNum = Number(varianteSeleccionada?.precio ?? producto.precio) || 0;
+        const isInStock = stockInfinito || stockDisponible > 0;
+
+        const productSchema = {
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            name: producto.nombre,
+            image: [ogImage],
+            description: shortDesc,
+            sku: varianteSeleccionada?.sku || `MIV-${producto.id_producto}`,
+            brand: {
+                "@type": "Brand",
+                name: "MiVenta",
+            },
+            offers: {
+                "@type": "Offer",
+                url: `https://www.miventa.co/producto/${producto.slug || productId}`,
+                priceCurrency: "COP",
+                price: priceNum,
+                priceValidUntil: "2027-12-31",
+                itemCondition: "https://schema.org/NewCondition",
+                availability: isInStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                seller: {
+                    "@type": "Organization",
+                    name: "MiVenta",
+                },
+            },
+        };
+
         return {
             title: `${producto.nombre} | MiVenta`,
-            description: producto.descripcion || "Encuentra la mejor ropa deportiva y moda en MiVenta.",
+            description: shortDesc,
+            keywords: `${producto.nombre}, comprar ${producto.nombre}, ropa deportiva, moda colombia, MiVenta`,
             path: `/producto/${producto.slug || productId}`,
             image: ogImage,
             ogType: "product",
+            structuredData: productSchema,
         };
-    }, [producto, productId, galeria]);
+    }, [producto, productId, galeria, varianteSeleccionada, stockDisponible, stockInfinito]);
 
     // Lista de miniaturas con fallback
     const galeriaRender = galeria.length > 0 ? galeria : [{ imagen: NoImage }];
@@ -398,9 +431,11 @@ function ProductDetail({ productId }) {
                 <SEO
                     title={seoConfig.title}
                     description={seoConfig.description}
+                    keywords={seoConfig.keywords}
                     path={seoConfig.path}
                     image={seoConfig.image}
                     ogType={seoConfig.ogType}
+                    structuredData={seoConfig.structuredData}
                 />
             )}
 

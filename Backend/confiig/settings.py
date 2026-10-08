@@ -16,8 +16,8 @@ PROJECT_ROOT = BASE_DIR.parent
 # ============================================================
 
 # Local:
-#   BaulMagicoShop/.env
 #   Backend/.env
+#   .env
 #
 # Vercel:
 #   Las variables llegan directamente por os.environ.
@@ -98,6 +98,9 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     ".vercel.app",
+    "miventa.co",
+    "www.miventa.co",
+    ".miventa.co",
 ]
 
 _env_hosts = os.environ.get("ALLOWED_HOSTS")
@@ -131,7 +134,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
 
-    # Aplicaciones BaulMagicoShop
+    # Aplicaciones MiVenta
     "apps.users",
     "apps.categories",
     "apps.products",
@@ -313,6 +316,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "http://localhost:5178",
     "http://127.0.0.1:5178",
+    "https://miventa.co",
+    "https://www.miventa.co",
 ]
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL")
@@ -332,6 +337,13 @@ if _cors_env:
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.vercel\.app$",
+    r"^https://([a-zA-Z0-9-]+\.)?miventa\.co$",
+]
+
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-csrftoken",
 ]
 
 
@@ -345,6 +357,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5178",
     "http://127.0.0.1:5178",
     "https://*.vercel.app",
+    "https://miventa.co",
+    "https://www.miventa.co",
+    "https://*.miventa.co",
 ]
 
 if FRONTEND_URL:
@@ -474,5 +489,5 @@ BLOB_WEBHOOK_PUBLIC_KEY = (
 
 WHATSAPP_NUMBER = os.environ.get(
     "WHATSAPP_NUMBER",
-    "573181174546",
+    "573004726258",
 )

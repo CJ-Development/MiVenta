@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
 
-Sitemap: https://www.baulmagicoshop.com/sitemap.xml
+Sitemap: https://www.miventa.co/sitemap.xml

@@ -11,9 +11,11 @@ from .views import (
     DireccionView,
     DireccionDetalleView,
     CsrfTokenView,
+    ActividadListView,
 )
 
 urlpatterns = [
+    path("actividades/", ActividadListView.as_view(), name="actividades-list"),
     path("register/", RegisterView.as_view(), name="register"),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),

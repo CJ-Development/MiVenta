@@ -482,3 +482,18 @@ class CsrfTokenView(APIView):
         return Response({
             "csrfToken": token
         })
+
+
+class ActividadListView(APIView):
+    """
+    Retorna la lista de actividades reales del panel de administración.
+    """
+    def get(self, request):
+        from .activity import obtener_actividades_recientes
+        limit = request.query_params.get("limit", 30)
+        try:
+            limit = int(limit)
+        except (ValueError, TypeError):
+            limit = 30
+        actividades = obtener_actividades_recientes(limit=limit)
+        return Response(actividades, status=status.HTTP_200_OK)

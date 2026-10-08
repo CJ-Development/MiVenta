@@ -65,6 +65,18 @@ class OfertaView(APIView):
 
         oferta = OfertaService.crear(serializer.validated_data)
 
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Creación de oferta",
+                elemento=oferta.nombre,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="oferta",
+                detalles=f"Descuento: {oferta.valor}{'%' if oferta.tipo_descuento == 'porcentaje' else ' COP'}",
+            )
+        except Exception:
+            pass
+
         return Response(
             OfertaSerializer(oferta).data,
             status=status.HTTP_201_CREATED,
@@ -105,11 +117,36 @@ class OfertaDetalleView(APIView):
 
         oferta.refresh_from_db()
 
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Edición de oferta",
+                elemento=oferta.nombre,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="oferta",
+                detalles=f"Descuento: {oferta.valor}{'%' if oferta.tipo_descuento == 'porcentaje' else ' COP'}",
+            )
+        except Exception:
+            pass
+
         return Response(OfertaSerializer(oferta).data)
 
     def delete(self, request, id):
+        oferta = Oferta.objects.filter(id_oferta=id).first()
+        nom_oferta = oferta.nombre if oferta else f"Oferta #{id}"
 
         OfertaService.eliminar(id)
+
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Eliminación de oferta",
+                elemento=nom_oferta,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="oferta",
+            )
+        except Exception:
+            pass
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

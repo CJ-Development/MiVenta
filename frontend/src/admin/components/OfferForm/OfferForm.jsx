@@ -309,11 +309,26 @@ function OfferForm({ offer, onClose, onCreated }) {
     const toggleCategoria = (idCategoria) => {
         setFormData((prev) => {
             const actual = new Set(prev.categorias_ids);
-            if (actual.has(idCategoria)) {
-                actual.delete(idCategoria);
+            const grupos = agruparCategoriasJerarquicamente(categorias);
+            const esPadre = grupos.find((g) => g.padre.id_categoria === idCategoria);
+
+            if (esPadre) {
+                const hijosIds = esPadre.hijos.map((h) => h.id_categoria);
+                if (actual.has(idCategoria)) {
+                    actual.delete(idCategoria);
+                    hijosIds.forEach((id) => actual.delete(id));
+                } else {
+                    actual.add(idCategoria);
+                    hijosIds.forEach((id) => actual.add(id));
+                }
             } else {
-                actual.add(idCategoria);
+                if (actual.has(idCategoria)) {
+                    actual.delete(idCategoria);
+                } else {
+                    actual.add(idCategoria);
+                }
             }
+
             return {
                 ...prev,
                 categorias_ids: Array.from(actual)
@@ -323,7 +338,7 @@ function OfferForm({ offer, onClose, onCreated }) {
 
 
     /* =====================================================
-       LOOKUPS PARA EL PREVIEW
+       LOOKUPS PARA EL PREVIEW Y PRODUCTOS AFECTADOS
     ===================================================== */
 
     const productoSeleccionado = useMemo(() => {
@@ -343,6 +358,36 @@ function OfferForm({ offer, onClose, onCreated }) {
             formData.categorias_ids.includes(c.id_categoria)
         );
     }, [categorias, formData.categorias_ids]);
+
+    // Productos afectados por la selección de producto y categorías
+    const productosAfectados = useMemo(() => {
+        const setCats = new Set(formData.categorias_ids.map(Number));
+        const lista = [];
+
+        if (productoSeleccionado) {
+            lista.push(productoSeleccionado);
+        }
+
+        if (setCats.size > 0) {
+            productos.forEach((p) => {
+                const catId = p.categoria?.id_categoria;
+                const parentId =
+                    p.categoria?.id_categoria_padre ||
+                    p.categoria?.categoria_padre?.id_categoria;
+                const coincide =
+                    (catId && setCats.has(catId)) ||
+                    (parentId && setCats.has(parentId));
+                if (
+                    coincide &&
+                    !lista.some((item) => item.id_producto === p.id_producto)
+                ) {
+                    lista.push(p);
+                }
+            });
+        }
+
+        return lista;
+    }, [productos, formData.categorias_ids, productoSeleccionado]);
 
 
     /* =====================================================
@@ -375,16 +420,10 @@ function OfferForm({ offer, onClose, onCreated }) {
        VALIDACIÓN POR PASO
     ===================================================== */
 
-    // Devuelve el primer error del paso indicado, o null si pasa.
-    // Cada error referencia el step al que pertenece, para que el handler
-    // que llama a esta función pueda mover al usuario al paso correcto.
     const validarPaso = (stepKey) => {
         if (stepKey === "info") {
             if (!formData.nombre.trim()) {
                 return { mensaje: "Ingresa el nombre de la oferta.", step: "info" };
-            }
-            if (!formData.producto_id) {
-                return { mensaje: "Selecciona un producto.", step: "info" };
             }
             if (!formData.valor) {
                 return { mensaje: "Ingresa el valor del descuento.", step: "info" };
@@ -398,6 +437,12 @@ function OfferForm({ offer, onClose, onCreated }) {
             if (new Date(formData.fecha_fin) < new Date(formData.fecha_inicio)) {
                 return {
                     mensaje: "La fecha de fin debe ser posterior a la fecha de inicio.",
+                    step: "vigencia"
+                };
+            }
+            if (!formData.producto_id && formData.categorias_ids.length === 0) {
+                return {
+                    mensaje: "Debes seleccionar un producto específico en el paso 1 o al menos una categoría en el paso 2.",
                     step: "vigencia"
                 };
             }
@@ -416,7 +461,14 @@ function OfferForm({ offer, onClose, onCreated }) {
             event.preventDefault();
         }
 
-        // Validamos los dos pasos editables; el resumen no tiene campos.
+        // CRÍTICO (Requerimiento 4): El Paso 3 NO debe crear automáticamente la oferta.
+        // El Paso 3 es la pantalla de RESUMEN Y CONFIRMACIÓN.
+        // Solo se guarda la oferta cuando el administrador presiona el botón "Crear oferta" en el paso 3.
+        if (step !== "resumen") {
+            irSiguiente();
+            return;
+        }
+
         const errorInfo = validarPaso("info") || validarPaso("vigencia");
         if (errorInfo) {
             setStep(errorInfo.step);
@@ -426,10 +478,14 @@ function OfferForm({ offer, onClose, onCreated }) {
             return;
         }
 
+        const prodId = formData.producto_id
+            ? Number(formData.producto_id)
+            : productosAfectados[0]?.id_producto || null;
+
         const payload = {
             nombre: formData.nombre,
             descripcion: formData.descripcion,
-            producto_id: Number(formData.producto_id),
+            producto_id: prodId,
             variante_id: formData.variante_id ? Number(formData.variante_id) : null,
             tipo_descuento: formData.tipo_descuento,
             valor: Number(formData.valor),
@@ -733,8 +789,8 @@ function OfferForm({ offer, onClose, onCreated }) {
                                 {/* Producto */}
                                 <div className="form-group full">
                                     <label htmlFor="producto_id">
-                                        Producto<span>*</span>
-                                        <HelpHint texto="Producto al que se le aplicará la oferta. Las variantes disponibles dependerán de esta elección." />
+                                        Producto <small>(opcional si aplicas por categorías en el paso 2)</small>
+                                        <HelpHint texto="Puedes seleccionar un producto específico o dejarlo en blanco para aplicar la oferta a categorías enteras en el paso 2." />
                                     </label>
                                     <div className="select-wrapper">
                                         <select
@@ -744,7 +800,7 @@ function OfferForm({ offer, onClose, onCreated }) {
                                             onChange={handleChange}
                                             disabled={loadingExtras}
                                         >
-                                            <option value="">Selecciona un producto</option>
+                                            <option value="">Aplicar por categorías (seleccionar en el paso 2)</option>
                                             {productos.map((producto) => (
                                                 <option
                                                     key={producto.id_producto}
@@ -916,9 +972,13 @@ function OfferForm({ offer, onClose, onCreated }) {
                                 {/* Categorías */}
                                 <div className="form-group full">
                                     <label>
-                                        Categorías<small>(opcional, selección múltiple)</small>
-                                        <HelpHint texto="Agrupa la oferta bajo estas categorías en el catálogo. Si no eliges ninguna, la oferta no quedará agrupada." />
+                                        Categorías a las que aplica la oferta<span>*</span>
+                                        <HelpHint texto="Determina a qué productos se aplicará el descuento. Al seleccionar una categoría padre se incluyen automáticamente sus subcategorías." />
                                     </label>
+                                    <p className="category-selection-guide-text">
+                                        Selecciona las categorías cuyos productos recibirán esta oferta.
+                                        Al marcar una categoría principal, se aplicará a todos los productos pertenecientes a ella y a sus subcategorías.
+                                    </p>
 
                                     <div className="categories-manage-row">
                                         <Link
@@ -1023,10 +1083,27 @@ function OfferForm({ offer, onClose, onCreated }) {
                                         )}
                                     </div>
 
-                                    <small>
-                                        La oferta aparecerá agrupada bajo las categorías
-                                        seleccionadas.
-                                    </small>
+                                    {/* Indicador en tiempo real de productos afectados */}
+                                    <div className="affected-products-banner">
+                                        <div className="affected-products-header">
+                                            <Package size={16} />
+                                            <strong>Productos afectados por la selección ({productosAfectados.length}):</strong>
+                                        </div>
+                                        {productosAfectados.length === 0 ? (
+                                            <p className="affected-products-empty">
+                                                Ningún producto seleccionado aún. Selecciona categorías o un producto en el paso 1 para ver el alcance de la oferta.
+                                            </p>
+                                        ) : (
+                                            <div className="affected-products-chips">
+                                                {productosAfectados.map((p) => (
+                                                    <span key={p.id_producto} className="affected-chip">
+                                                        {p.nombre}
+                                                        {p.categoria?.nombre ? ` (${p.categoria.nombre})` : ""}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </section>
                         )}
@@ -1177,6 +1254,54 @@ function OfferForm({ offer, onClose, onCreated }) {
                                 </div>
 
 
+                                {/* Productos afectados */}
+                                <div className="summary-card">
+                                    <div className="summary-card-header">
+                                        <h4>Productos afectados</h4>
+                                        <button
+                                            type="button"
+                                            className="edit-step-button"
+                                            onClick={() => setStep("vigencia")}
+                                        >
+                                            Editar
+                                        </button>
+                                    </div>
+                                    <div className="summary-row">
+                                        <span className="summary-label">Total alcanzados</span>
+                                        <span className="summary-value">
+                                            <strong>{productosAfectados.length} producto(s) recibirán esta oferta</strong>
+                                        </span>
+                                    </div>
+                                    {productosAfectados.length > 0 && (
+                                        <div className="summary-affected-list">
+                                            {productosAfectados.slice(0, 8).map((p) => {
+                                                const pBase = Number(p.precio || 0);
+                                                const pDesc = calcularPrecioConDescuento(
+                                                    pBase,
+                                                    formData.tipo_descuento,
+                                                    formData.valor
+                                                );
+                                                return (
+                                                    <div key={p.id_producto} className="summary-affected-item">
+                                                        <span className="affected-name">{p.nombre}</span>
+                                                        <div className="affected-prices">
+                                                            <span className="original-price">{formatearPrecio(pBase)}</span>
+                                                            {pDesc !== null && (
+                                                                <span className="discounted-price">{formatearPrecio(pDesc)}</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                            {productosAfectados.length > 8 && (
+                                                <small className="more-products-text">
+                                                    + {productosAfectados.length - 8} producto(s) más incluidos
+                                                </small>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Precio con descuento */}
                                 {(() => {
                                     const precioBase = productoSeleccionado?.precio
@@ -1192,7 +1317,7 @@ function OfferForm({ offer, onClose, onCreated }) {
                                     return (
                                         <div className="summary-card">
                                             <div className="summary-card-header">
-                                                <h4>Precio con descuento</h4>
+                                                <h4>Precio con descuento (referencia)</h4>
                                             </div>
                                             <div className="summary-price-box">
                                                 <div className="preview-price-row">
@@ -1241,41 +1366,53 @@ function OfferForm({ offer, onClose, onCreated }) {
                             Cancelar
                         </button>
 
-                        {indiceActual > 0 && (
-                            <button
-                                type="button"
-                                className="secondary-button"
-                                onClick={irAnterior}
-                                disabled={submitting}
-                            >
-                                <ArrowLeft size={16} />
-                                Anterior
-                            </button>
-                        )}
-
-                        {step !== "resumen" ? (
-                            <button
-                                type="button"
-                                className="save-form-button"
-                                onClick={irSiguiente}
-                                disabled={submitting}
-                            >
-                                Siguiente
-                                <ArrowRight size={16} />
-                            </button>
+                        {step === "resumen" ? (
+                            <>
+                                <button
+                                    type="button"
+                                    className="secondary-button"
+                                    onClick={() => setStep("vigencia")}
+                                    disabled={submitting}
+                                >
+                                    <ArrowLeft size={16} />
+                                    Volver y editar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="save-form-button"
+                                    disabled={submitting}
+                                >
+                                    <Check size={17} />
+                                    {submitting
+                                        ? "Guardando..."
+                                        : editing
+                                            ? "Guardar cambios"
+                                            : "Crear oferta"}
+                                </button>
+                            </>
                         ) : (
-                            <button
-                                type="submit"
-                                className="save-form-button"
-                                disabled={submitting}
-                            >
-                                <Check size={17} />
-                                {submitting
-                                    ? "Guardando..."
-                                    : editing
-                                        ? "Guardar cambios"
-                                        : "Crear oferta"}
-                            </button>
+                            <>
+                                {indiceActual > 0 && (
+                                    <button
+                                        type="button"
+                                        className="secondary-button"
+                                        onClick={irAnterior}
+                                        disabled={submitting}
+                                    >
+                                        <ArrowLeft size={16} />
+                                        Anterior
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    className="save-form-button"
+                                    onClick={irSiguiente}
+                                    disabled={submitting}
+                                >
+                                    Siguiente
+                                    <ArrowRight size={16} />
+                                </button>
+                            </>
                         )}
                     </div>
 

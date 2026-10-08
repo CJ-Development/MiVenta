@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import {
     getCategories,
     getProducts,
+    archiveCategory,
     deleteCategory,
     reactivateCategory
 } from "../../../services/adminService";
@@ -14,14 +15,15 @@ import {
     FolderOpen,
     FolderTree,
     FolderPlus,
-    Copy,
     Package,
     EyeOff,
     Search,
     SlidersHorizontal,
     Pencil,
+    Archive,
     Trash2,
     RefreshCw,
+    RotateCcw,
     AlertTriangle,
     X
 } from "lucide-react";
@@ -210,45 +212,43 @@ function CategoryTable({ refreshKey, onEdit, onAddSubcategory }) {
         return sorted;
     }, [categorias, typeFilter, searchQuery, sortBy, products]);
 
-    // Eliminar categoría
+    // Acciones de categoría
+    const handleToggleArchiveCat = async (cat) => {
+        const isArchived = cat.estado === "archivado";
+        try {
+            if (isArchived) {
+                await reactivateCategory(cat.id_categoria);
+            } else {
+                await archiveCategory(cat.id_categoria, { cascade: true });
+            }
+            await cargarDatos();
+        } catch (err) {
+            console.error(err);
+            alert(err?.response?.data?.detail || "No fue posible actualizar el estado de la categoría.");
+        }
+    };
+
     const eliminarCategoria = (id, nombre) => {
         setCategoryToDelete({ id, nombre: nombre || "esta categoría" });
-        setDeleteStep(1);
-        setDeleteNameInput("");
         setDeleteModalOpen(true);
     };
 
     const closeDeleteModal = () => {
         setDeleteModalOpen(false);
         setCategoryToDelete(null);
-        setDeleteStep(1);
-        setDeleteNameInput("");
     };
 
     const handleConfirmDelete = async () => {
         if (!categoryToDelete) return;
-        const { id } = categoryToDelete;
+        const { id, nombre } = categoryToDelete;
         closeDeleteModal();
 
         try {
-            await deleteCategory(id, { cascade: true });
+            await deleteCategory(id, nombre);
             await cargarDatos();
         } catch (err) {
             console.error(err);
-            alert("Ocurrió un error al archivar la categoría.");
-        }
-    };
-
-    const reactivarCat = async (id, nombre) => {
-        const confirmar = window.confirm(`¿Reactivar la categoría "${nombre}"?`);
-        if (!confirmar) return;
-
-        try {
-            await reactivateCategory(id);
-            await cargarDatos();
-        } catch (err) {
-            console.error(err);
-            alert("No fue posible reactivar la categoría.");
+            alert(err?.response?.data?.detail || "Ocurrió un error al eliminar la categoría. Si tiene productos asociados, te sugerimos archivarla.");
         }
     };
 
@@ -517,32 +517,21 @@ function CategoryTable({ refreshKey, onEdit, onAddSubcategory }) {
 
                                                 <button
                                                     type="button"
-                                                    className="cat-action-btn copy"
-                                                    onClick={() => onAddSubcategory && onAddSubcategory(cat)}
-                                                    title={`Agregar subcategoría a ${cat.nombre}`}
+                                                    className={`cat-action-btn ${cat.estado === "archivado" ? "reactivate" : "archive"}`}
+                                                    onClick={() => handleToggleArchiveCat(cat)}
+                                                    title={cat.estado === "archivado" ? "Reactivar categoría" : "Archivar categoría"}
                                                 >
-                                                    <Copy size={15} />
+                                                    {cat.estado === "archivado" ? <RotateCcw size={15} /> : <Archive size={15} />}
                                                 </button>
 
-                                                {cat.estado === "activo" ? (
-                                                    <button
-                                                        type="button"
-                                                        className="cat-action-btn delete"
-                                                        onClick={() => eliminarCategoria(cat.id_categoria, cat.nombre)}
-                                                        title="Archivar categoría"
-                                                    >
-                                                        <Trash2 size={15} />
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        type="button"
-                                                        className="cat-action-btn reactivate"
-                                                        onClick={() => reactivarCat(cat.id_categoria, cat.nombre)}
-                                                        title="Reactivar categoría"
-                                                    >
-                                                        <RefreshCw size={15} />
-                                                    </button>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    className="cat-action-btn delete"
+                                                    onClick={() => eliminarCategoria(cat.id_categoria, cat.nombre)}
+                                                    title="Eliminar categoría"
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -598,34 +587,23 @@ function CategoryTable({ refreshKey, onEdit, onAddSubcategory }) {
 
                                                                 <button
                                                                     type="button"
-                                                                    className="cat-action-btn copy"
-                                                                    onClick={() => onAddSubcategory && onAddSubcategory(child)}
-                                                                    title={`Agregar sub-nivel a ${child.nombre}`}
+                                                                    className={`cat-action-btn ${child.estado === "archivado" ? "reactivate" : "archive"}`}
+                                                                    onClick={() => handleToggleArchiveCat(child)}
+                                                                    title={child.estado === "archivado" ? "Reactivar subcategoría" : "Archivar subcategoría"}
                                                                 >
-                                                                    <Copy size={15} />
+                                                                    {child.estado === "archivado" ? <RotateCcw size={15} /> : <Archive size={15} />}
                                                                 </button>
 
-                                                                {child.estado === "activo" ? (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="cat-action-btn delete"
-                                                                        onClick={() =>
-                                                                            eliminarCategoria(child.id_categoria, child.nombre)
-                                                                        }
-                                                                        title="Archivar subcategoría"
-                                                                    >
-                                                                        <Trash2 size={15} />
-                                                                    </button>
-                                                                ) : (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="cat-action-btn reactivate"
-                                                                        onClick={() => reactivarCat(child.id_categoria, child.nombre)}
-                                                                        title="Reactivar subcategoría"
-                                                                    >
-                                                                        <RefreshCw size={15} />
-                                                                    </button>
-                                                                )}
+                                                                <button
+                                                                    type="button"
+                                                                    className="cat-action-btn delete"
+                                                                    onClick={() =>
+                                                                        eliminarCategoria(child.id_categoria, child.nombre)
+                                                                    }
+                                                                    title="Eliminar subcategoría"
+                                                                >
+                                                                    <Trash2 size={15} />
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -671,8 +649,8 @@ function CategoryTable({ refreshKey, onEdit, onAddSubcategory }) {
                                     <Trash2 size={22} />
                                 </div>
                                 <div>
-                                    <h3>Archivar categoría</h3>
-                                    <p>Esta acción afectará la organización del catálogo</p>
+                                    <h3>Eliminar categoría</h3>
+                                    <p>Esta acción retirará la categoría de la base de datos</p>
                                 </div>
                                 <button type="button" className="modal-close-icon" onClick={closeDeleteModal}>
                                     <X size={18} />
@@ -680,83 +658,33 @@ function CategoryTable({ refreshKey, onEdit, onAddSubcategory }) {
                             </div>
 
                             <div className="modal-danger-body">
-                                {deleteStep === 1 ? (
-                                    <>
-                                        <p className="warning-text">
-                                            ¿Estás seguro de que deseas archivar{" "}
-                                            <strong>"{categoryToDelete.nombre}"</strong>?
-                                        </p>
-                                        <div className="warning-banner">
-                                            <AlertTriangle size={18} />
-                                            <span>
-                                                Esta acción archivará en cascada todas las subcategorías vinculadas.
-                                                Los productos asociados ya no aparecerán clasificados en esta categoría.
-                                            </span>
-                                        </div>
-                                        <div className="modal-btn-row">
-                                            <button
-                                                type="button"
-                                                className="secondary-btn"
-                                                onClick={closeDeleteModal}
-                                            >
-                                                Cancelar
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="danger-btn"
-                                                onClick={() => setDeleteStep(2)}
-                                            >
-                                                Sí, continuar
-                                            </button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p className="confirm-instructions">
-                                            Para confirmar definitivamente, escribe el nombre exacto de la categoría:
-                                        </p>
-                                        <div className="name-to-match">"{categoryToDelete.nombre}"</div>
-
-                                        <input
-                                            type="text"
-                                            autoFocus
-                                            placeholder={`Escribe "${categoryToDelete.nombre}"`}
-                                            value={deleteNameInput}
-                                            onChange={(e) => setDeleteNameInput(e.target.value)}
-                                            className="confirm-delete-input"
-                                            onKeyDown={(e) => {
-                                                if (
-                                                    e.key === "Enter" &&
-                                                    deleteNameInput.trim().toLowerCase() ===
-                                                        categoryToDelete.nombre.trim().toLowerCase()
-                                                ) {
-                                                    handleConfirmDelete();
-                                                }
-                                            }}
-                                        />
-
-                                        <div className="modal-btn-row">
-                                            <button
-                                                type="button"
-                                                className="secondary-btn"
-                                                onClick={() => setDeleteStep(1)}
-                                            >
-                                                Atrás
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="danger-btn"
-                                                disabled={
-                                                    deleteNameInput.trim().toLowerCase() !==
-                                                    categoryToDelete.nombre.trim().toLowerCase()
-                                                }
-                                                onClick={handleConfirmDelete}
-                                            >
-                                                Archivar definitivamente
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
+                                <p className="warning-text">
+                                    ¿Estás seguro de que deseas eliminar permanentemente la categoría{" "}
+                                    <strong>"{categoryToDelete.nombre}"</strong>?
+                                </p>
+                                <div className="warning-banner">
+                                    <AlertTriangle size={18} />
+                                    <span>
+                                        Esta acción eliminará definitivamente la categoría del sistema. No se podrá deshacer.
+                                        Si deseas conservar la información sin mostrarla en la tienda, utiliza la opción Archivar.
+                                    </span>
+                                </div>
+                                <div className="modal-btn-row">
+                                    <button
+                                        type="button"
+                                        className="secondary-btn"
+                                        onClick={closeDeleteModal}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="danger-btn"
+                                        onClick={handleConfirmDelete}
+                                    >
+                                        Eliminar definitivamente
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>,

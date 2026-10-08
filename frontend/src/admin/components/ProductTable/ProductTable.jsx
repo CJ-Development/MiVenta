@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import "./ProductTable.css";
 
 import {
     Search,
     Pencil,
-    Copy,
+    Archive,
     Trash2,
     RotateCcw,
     SlidersHorizontal,
@@ -18,14 +19,15 @@ import {
     XCircle,
     TrendingUp,
     Loader2,
+    X,
 } from "lucide-react";
 
 import {
     getProducts,
     archiveProduct,
     reactivateProduct,
+    deleteProduct,
     getCategories,
-    createProduct,
 } from "../../../services/adminService";
 
 import { mediaUrl } from "../../../utils/mediaUrl";
@@ -273,12 +275,17 @@ function ProductTable({ refreshKey, onEdit }) {
         setSelectedIds(next);
     };
 
-    // Acción de archivar o reactivar
+    // Modal de confirmación para eliminar
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [productToDelete, setProductToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    // Acción de archivar o reactivar (conserva los datos sin eliminarlos)
     const handleArchive = async (producto) => {
         const isArchived = producto.estado === "archivado";
         const mensaje = isArchived
             ? `¿Deseas reactivar el producto "${producto.nombre}"?`
-            : `¿Deseas archivar el producto "${producto.nombre}"? No se eliminará del sistema.`;
+            : `¿Deseas archivar el producto "${producto.nombre}"? Se retirará de la tienda pero se conservará su información.`;
 
         if (!window.confirm(mensaje)) return;
 
@@ -290,38 +297,38 @@ function ProductTable({ refreshKey, onEdit }) {
             }
             await cargar();
         } catch (err) {
-            console.error(err);
+            console.error("Error al actualizar estado del producto:", err);
             alert("No fue posible actualizar el estado del producto.");
         }
     };
 
-    // Acción de duplicar producto
-    const handleDuplicate = async (producto) => {
-        if (!window.confirm(`¿Deseas duplicar el producto "${producto.nombre}"?`)) {
-            return;
-        }
+    // Apertura y confirmación de eliminación física mediante modal
+    const abrirModalEliminar = (producto) => {
+        setProductToDelete(producto);
+        setDeleteModalOpen(true);
+    };
 
+    const cerrarModalEliminar = () => {
+        if (isDeleting) return;
+        setDeleteModalOpen(false);
+        setProductToDelete(null);
+    };
+
+    const confirmarEliminar = async () => {
+        if (!productToDelete) return;
         try {
-            setLoading(true);
-            const cloneData = {
-                nombre: `${producto.nombre} (Copia)`,
-                descripcion: producto.descripcion || "",
-                precio: producto.precio || 0,
-                estado: "inactivo",
-                categoria: producto.categoria?.id_categoria || null,
-            };
-            await createProduct(cloneData);
+            setIsDeleting(true);
+            await deleteProduct(productToDelete.id_producto);
+            cerrarModalEliminar();
             await cargar();
         } catch (err) {
-            console.error("Error al duplicar producto:", err);
-            // Si la llamada directa falla por validación de formulario, abrir en el editor
-            onEdit({
-                ...producto,
-                id_producto: null,
-                nombre: `${producto.nombre} (Copia)`,
-            });
+            console.error("Error al eliminar producto:", err);
+            alert(
+                err?.response?.data?.detail ||
+                "No fue posible eliminar el producto. Si tiene pedidos asociados, te sugerimos utilizar la opción Archivar."
+            );
         } finally {
-            setLoading(false);
+            setIsDeleting(false);
         }
     };
 
@@ -702,7 +709,7 @@ function ProductTable({ refreshKey, onEdit }) {
                                             </span>
                                         </td>
 
-                                        {/* 7. ACCIONES: EDITAR, DUPLICAR, ARCHIVAR/ELIMINAR */}
+                                        {/* 7. ACCIONES: EDITAR, ARCHIVAR, ELIMINAR */}
                                         <td className="td-col-actions">
                                             <div className="table-actions-cluster">
                                                 <button
@@ -717,30 +724,30 @@ function ProductTable({ refreshKey, onEdit }) {
 
                                                 <button
                                                     type="button"
-                                                    className="action-icon-pill-btn copy"
-                                                    title="Duplicar producto"
-                                                    onClick={() => handleDuplicate(producto)}
-                                                    aria-label="Duplicar"
-                                                >
-                                                    <Copy size={15} />
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    className="action-icon-pill-btn delete"
+                                                    className={`action-icon-pill-btn ${producto.estado === "archivado" ? "reactivate" : "archive"}`}
                                                     title={
                                                         producto.estado === "archivado"
                                                             ? "Reactivar producto"
                                                             : "Archivar producto"
                                                     }
                                                     onClick={() => handleArchive(producto)}
-                                                    aria-label="Eliminar o archivar"
+                                                    aria-label={producto.estado === "archivado" ? "Reactivar" : "Archivar"}
                                                 >
                                                     {producto.estado === "archivado" ? (
                                                         <RotateCcw size={15} />
                                                     ) : (
-                                                        <Trash2 size={15} />
+                                                        <Archive size={15} />
                                                     )}
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    className="action-icon-pill-btn delete"
+                                                    title="Eliminar producto"
+                                                    onClick={() => abrirModalEliminar(producto)}
+                                                    aria-label="Eliminar"
+                                                >
+                                                    <Trash2 size={15} />
                                                 </button>
                                             </div>
                                         </td>
@@ -793,6 +800,74 @@ function ProductTable({ refreshKey, onEdit }) {
                     </button>
                 </div>
             </div>
+
+            {/* =========================================================
+                5. MODAL DE CONFIRMACIÓN DE ELIMINACIÓN DE PRODUCTO
+            ========================================================= */}
+            {deleteModalOpen && productToDelete &&
+                createPortal(
+                    <div className="modal-overlay" onClick={cerrarModalEliminar}>
+                        <div
+                            className="cat-delete-modal-card"
+                            onClick={(e) => e.stopPropagation()}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="modal-delete-title"
+                        >
+                            <div className="modal-danger-header">
+                                <div className="danger-icon-box">
+                                    <Trash2 size={22} />
+                                </div>
+                                <div>
+                                    <h3 id="modal-delete-title">Eliminar producto</h3>
+                                    <p>Esta acción retirará el producto del catálogo</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="modal-close-icon"
+                                    onClick={cerrarModalEliminar}
+                                    aria-label="Cerrar ventana"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            <div className="modal-danger-body">
+                                <p className="warning-text">
+                                    ¿Estás seguro de que deseas eliminar permanentemente el producto{" "}
+                                    <strong>"{productToDelete.nombre}"</strong>?
+                                </p>
+                                <div className="warning-banner">
+                                    <AlertTriangle size={18} />
+                                    <span>
+                                        Esta acción eliminará físicamente el producto y sus datos asociados.
+                                        Si deseas retirarlo temporalmente de la venta sin perder el historial,
+                                        puedes utilizar la opción <strong>Archivar</strong>.
+                                    </span>
+                                </div>
+                                <div className="modal-btn-row">
+                                    <button
+                                        type="button"
+                                        className="secondary-btn"
+                                        onClick={cerrarModalEliminar}
+                                        disabled={isDeleting}
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="danger-btn"
+                                        onClick={confirmarEliminar}
+                                        disabled={isDeleting}
+                                    >
+                                        {isDeleting ? "Eliminando..." : "Confirmar eliminación"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 }

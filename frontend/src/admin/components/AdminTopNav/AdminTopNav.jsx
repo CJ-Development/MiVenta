@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
     Search,
@@ -21,6 +21,9 @@ import {
     Trash2,
     AlertTriangle,
     UserPlus,
+    Folder,
+    Loader2,
+    ArrowRight,
 } from "lucide-react";
 import { useAuth } from "../../../hooks/useAuth";
 import api, { getLowStockVariants } from "../../../services/api";
@@ -39,6 +42,17 @@ function AdminTopNav() {
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [searchResultsOpen, setSearchResultsOpen] = useState(false);
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
+    const [searchCatalog, setSearchCatalog] = useState({
+        products: [],
+        categories: [],
+        orders: [],
+        users: [],
+        offers: [],
+    });
+    const searchDataLoaded = useRef(false);
+    const searchRef = useRef(null);
 
     // Notificaciones reales
     const [notifications, setNotifications] = useState([]);
@@ -158,6 +172,129 @@ function AdminTopNav() {
     // Notificaciones visibles no descartadas
     const activeNotifications = notifications.filter((n) => !dismissedIds.includes(n.id));
 
+    // Carga de catálogo para búsqueda en tiempo real
+    const ensureSearchData = async () => {
+        if (searchDataLoaded.current) return;
+        setIsSearchLoading(true);
+        try {
+            const [prodsRes, catsRes, ordersRes, usersRes, offersRes] = await Promise.all([
+                api.get("products/").catch(() => ({ data: [] })),
+                api.get("categories/").catch(() => ({ data: [] })),
+                api.get("orders/").catch(() => ({ data: [] })),
+                api.get("users/").catch(() => ({ data: [] })),
+                api.get("offers/").catch(() => ({ data: [] })),
+            ]);
+            setSearchCatalog({
+                products: Array.isArray(prodsRes.data) ? prodsRes.data : [],
+                categories: Array.isArray(catsRes.data) ? catsRes.data : [],
+                orders: Array.isArray(ordersRes.data) ? ordersRes.data : [],
+                users: Array.isArray(usersRes.data) ? usersRes.data : [],
+                offers: Array.isArray(offersRes.data) ? offersRes.data : [],
+            });
+            searchDataLoaded.current = true;
+        } catch (err) {
+            console.error("Error cargando catálogo de búsqueda:", err);
+        } finally {
+            setIsSearchLoading(false);
+        }
+    };
+
+    // Búsqueda en tiempo real sobre datos reales
+    const searchResults = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query || query.length < 1) return null;
+
+        const res = {
+            productos: [],
+            categorias: [],
+            pedidos: [],
+            ofertas: [],
+            usuarios: [],
+        };
+
+        // 1. Productos (nombre, SKU/slug, categoría)
+        (searchCatalog.products || []).forEach((p) => {
+            const matchNombre = p.nombre?.toLowerCase().includes(query);
+            const matchSlug = p.slug?.toLowerCase().includes(query);
+            const matchSku = String(p.id_producto).includes(query);
+            const matchCat = p.categoria?.nombre?.toLowerCase().includes(query);
+            if (matchNombre || matchSlug || matchSku || matchCat) {
+                res.productos.push({
+                    id: p.id_producto,
+                    title: p.nombre,
+                    subtitle: `SKU: ${p.slug || `PRO-${p.id_producto}`} · $${Number(p.precio || 0).toLocaleString("es-CO")}`,
+                    path: `/admin/products`,
+                });
+            }
+        });
+
+        // 2. Categorías (nombre)
+        (searchCatalog.categories || []).forEach((c) => {
+            if (c.nombre?.toLowerCase().includes(query)) {
+                res.categorias.push({
+                    id: c.id_categoria,
+                    title: c.nombre,
+                    subtitle: c.categoria_padre ? `Subcategoría de ${c.categoria_padre.nombre}` : "Categoría principal",
+                    path: `/admin/categories`,
+                });
+            }
+        });
+
+        // 3. Pedidos (referencia, cliente, id)
+        (searchCatalog.orders || []).forEach((o) => {
+            const matchRef = o.referencia?.toLowerCase().includes(query);
+            const matchId = String(o.id_compra).includes(query);
+            const matchClient = o.nombre_cliente?.toLowerCase().includes(query);
+            const matchEmail = o.correo_cliente?.toLowerCase().includes(query);
+            if (matchRef || matchId || matchClient || matchEmail) {
+                res.pedidos.push({
+                    id: o.id_compra,
+                    title: o.referencia || `#MVC-${String(o.id_compra).padStart(5, "0")}`,
+                    subtitle: `${o.nombre_cliente || "Cliente"} · $${Number(o.total || 0).toLocaleString("es-CO")} · ${o.estado_compra || "Pendiente"}`,
+                    path: `/admin/orders`,
+                });
+            }
+        });
+
+        // 4. Ofertas (nombre, descripción)
+        (searchCatalog.offers || []).forEach((of) => {
+            if (of.nombre?.toLowerCase().includes(query) || of.descripcion?.toLowerCase().includes(query)) {
+                res.ofertas.push({
+                    id: of.id_oferta,
+                    title: of.nombre,
+                    subtitle: `${of.tipo_descuento === "porcentaje" ? `${of.valor}%` : `$${Number(of.valor).toLocaleString("es-CO")}`} · ${of.activa ? "Activa" : "Inactiva"}`,
+                    path: `/admin/offers`,
+                });
+            }
+        });
+
+        // 5. Usuarios (nombre, email, teléfono)
+        (searchCatalog.users || []).forEach((u) => {
+            const nombreCompleto = `${u.nombres || ""} ${u.apellidos || ""}`.toLowerCase();
+            const matchNombre = nombreCompleto.includes(query);
+            const matchEmail = u.email?.toLowerCase().includes(query);
+            const matchTel = u.telefono?.includes(query);
+            if (matchNombre || matchEmail || matchTel) {
+                res.usuarios.push({
+                    id: u.id_usuario,
+                    title: `${u.nombres} ${u.apellidos}`.trim() || u.email,
+                    subtitle: `${u.email} · ${u.is_staff ? "Administrador" : "Cliente"}`,
+                    path: `/admin/users`,
+                });
+            }
+        });
+
+        return res;
+    }, [searchQuery, searchCatalog]);
+
+    const totalResultados = searchResults
+        ? searchResults.productos.length +
+          searchResults.categorias.length +
+          searchResults.pedidos.length +
+          searchResults.ofertas.length +
+          searchResults.usuarios.length
+        : 0;
+
     // Cerrar dropdowns al hacer clic fuera
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -170,6 +307,9 @@ function AdminTopNav() {
             if (notifDropdownRef.current && !notifDropdownRef.current.contains(e.target)) {
                 setNotificationsOpen(false);
             }
+            if (searchRef.current && !searchRef.current.contains(e.target)) {
+                setSearchResultsOpen(false);
+            }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -178,6 +318,7 @@ function AdminTopNav() {
     // Cerrar menú móvil al cambiar de ruta
     useEffect(() => {
         setMobileMenuOpen(false);
+        setSearchResultsOpen(false);
     }, [location.pathname]);
 
     const handleLogout = () => {
@@ -222,17 +363,204 @@ function AdminTopNav() {
                     </Link>
                 </div>
 
-                {/* BUSCADOR */}
-                <div className="admin-topnav-center">
+                {/* BUSCADOR REAL */}
+                <div className="admin-topnav-center" ref={searchRef}>
                     <div className="admin-search-wrapper">
                         <Search size={15} className="admin-search-icon" />
                         <input
                             type="text"
-                            placeholder="Buscar en el panel..."
+                            placeholder="Buscar productos, categorías, pedidos, usuarios..."
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={() => {
+                                ensureSearchData();
+                                setSearchResultsOpen(true);
+                            }}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                ensureSearchData();
+                                setSearchResultsOpen(true);
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Escape") {
+                                    setSearchResultsOpen(false);
+                                }
+                            }}
                         />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                className="admin-search-clear-btn"
+                                onClick={() => setSearchQuery("")}
+                                aria-label="Limpiar búsqueda"
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
                     </div>
+
+                    {/* DROPDOWN DE RESULTADOS EN TIEMPO REAL */}
+                    {searchResultsOpen && searchQuery.trim().length >= 1 && (
+                        <div className="admin-search-results-dropdown">
+                            <div className="search-results-header">
+                                <span>Resultados para "{searchQuery}"</span>
+                                {isSearchLoading ? (
+                                    <span className="search-loading-tag">
+                                        <Loader2 size={12} className="spin" /> Buscando...
+                                    </span>
+                                ) : (
+                                    <span className="search-results-count">
+                                        {totalResultados} encontrado{totalResultados !== 1 ? "s" : ""}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="search-results-scrollable">
+                                {totalResultados === 0 && !isSearchLoading ? (
+                                    <div className="search-empty-results">
+                                        <p>No se encontraron resultados en el panel administrativo</p>
+                                        <small>Prueba buscando por nombre de producto, SKU, categoría, pedido o usuario</small>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* 1. PRODUCTOS */}
+                                        {searchResults?.productos.length > 0 && (
+                                            <div className="search-results-group">
+                                                <div className="search-group-title">
+                                                    <Package size={13} />
+                                                    <span>Productos ({searchResults.productos.length})</span>
+                                                </div>
+                                                {searchResults.productos.map((item) => (
+                                                    <div
+                                                        key={`prod-${item.id}`}
+                                                        className="search-result-item"
+                                                        onClick={() => {
+                                                            navigate(item.path);
+                                                            setSearchResultsOpen(false);
+                                                            setSearchQuery("");
+                                                        }}
+                                                    >
+                                                        <div className="item-info">
+                                                            <strong className="item-title">{item.title}</strong>
+                                                            <span className="item-sub">{item.subtitle}</span>
+                                                        </div>
+                                                        <ArrowRight size={13} className="item-arrow" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* 2. CATEGORÍAS */}
+                                        {searchResults?.categorias.length > 0 && (
+                                            <div className="search-results-group">
+                                                <div className="search-group-title">
+                                                    <FolderTree size={13} />
+                                                    <span>Categorías ({searchResults.categorias.length})</span>
+                                                </div>
+                                                {searchResults.categorias.map((item) => (
+                                                    <div
+                                                        key={`cat-${item.id}`}
+                                                        className="search-result-item"
+                                                        onClick={() => {
+                                                            navigate(item.path);
+                                                            setSearchResultsOpen(false);
+                                                            setSearchQuery("");
+                                                        }}
+                                                    >
+                                                        <div className="item-info">
+                                                            <strong className="item-title">{item.title}</strong>
+                                                            <span className="item-sub">{item.subtitle}</span>
+                                                        </div>
+                                                        <ArrowRight size={13} className="item-arrow" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* 3. PEDIDOS */}
+                                        {searchResults?.pedidos.length > 0 && (
+                                            <div className="search-results-group">
+                                                <div className="search-group-title">
+                                                    <ShoppingCart size={13} />
+                                                    <span>Pedidos ({searchResults.pedidos.length})</span>
+                                                </div>
+                                                {searchResults.pedidos.map((item) => (
+                                                    <div
+                                                        key={`order-${item.id}`}
+                                                        className="search-result-item"
+                                                        onClick={() => {
+                                                            navigate(item.path);
+                                                            setSearchResultsOpen(false);
+                                                            setSearchQuery("");
+                                                        }}
+                                                    >
+                                                        <div className="item-info">
+                                                            <strong className="item-title">{item.title}</strong>
+                                                            <span className="item-sub">{item.subtitle}</span>
+                                                        </div>
+                                                        <ArrowRight size={13} className="item-arrow" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* 4. OFERTAS */}
+                                        {searchResults?.ofertas.length > 0 && (
+                                            <div className="search-results-group">
+                                                <div className="search-group-title">
+                                                    <Percent size={13} />
+                                                    <span>Ofertas ({searchResults.ofertas.length})</span>
+                                                </div>
+                                                {searchResults.ofertas.map((item) => (
+                                                    <div
+                                                        key={`offer-${item.id}`}
+                                                        className="search-result-item"
+                                                        onClick={() => {
+                                                            navigate(item.path);
+                                                            setSearchResultsOpen(false);
+                                                            setSearchQuery("");
+                                                        }}
+                                                    >
+                                                        <div className="item-info">
+                                                            <strong className="item-title">{item.title}</strong>
+                                                            <span className="item-sub">{item.subtitle}</span>
+                                                        </div>
+                                                        <ArrowRight size={13} className="item-arrow" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* 5. USUARIOS */}
+                                        {searchResults?.usuarios.length > 0 && (
+                                            <div className="search-results-group">
+                                                <div className="search-group-title">
+                                                    <Users size={13} />
+                                                    <span>Usuarios ({searchResults.usuarios.length})</span>
+                                                </div>
+                                                {searchResults.usuarios.map((item) => (
+                                                    <div
+                                                        key={`user-${item.id}`}
+                                                        className="search-result-item"
+                                                        onClick={() => {
+                                                            navigate(item.path);
+                                                            setSearchResultsOpen(false);
+                                                            setSearchQuery("");
+                                                        }}
+                                                    >
+                                                        <div className="item-info">
+                                                            <strong className="item-title">{item.title}</strong>
+                                                            <span className="item-sub">{item.subtitle}</span>
+                                                        </div>
+                                                        <ArrowRight size={13} className="item-arrow" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* ACCIONES Y PERFIL */}

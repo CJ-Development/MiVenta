@@ -11,7 +11,6 @@ import {
     Building2,
     Building,
     Home,
-    Compass,
     Truck,
     ShieldCheck,
     Lock,
@@ -54,7 +53,7 @@ function Checkout() {
 
     // Datos del cliente
     const [nombre, setNombre] = useState("Andrea García");
-    const [telefono, setTelefono] = useState("+57 318 1174546");
+    const [telefono, setTelefono] = useState("+57 300 4726258");
     const [correo, setCorreo] = useState("andrea@gmail.com");
     const [isEditingCustomer, setIsEditingCustomer] = useState(false);
 
@@ -338,8 +337,8 @@ function Checkout() {
             <div className="checkout-bg-shape checkout-bg-shape-bottom" />
 
             <SEO
-                title="Completar pedido | VentasYa"
-                description="Finaliza tu compra de forma 100% segura en VentasYa. Envíos garantizados a todo el país."
+                title="Completar pedido | MiVenta"
+                description="Finaliza tu compra de forma 100% segura en MiVenta. Envíos garantizados y pago contra entrega en toda Colombia."
                 path="/checkout"
                 noindex={true}
             />
@@ -503,7 +502,7 @@ function Checkout() {
                                                 setTelefono(e.target.value);
                                                 setTelefonoError("");
                                             }}
-                                            placeholder="+57 318 1174546"
+                                            placeholder="+57 300 4726258"
                                             className={telefonoError ? "input-has-error" : ""}
                                         />
                                         {telefonoError && (
@@ -695,7 +694,7 @@ function Checkout() {
                                                     setDireccion(e.target.value);
                                                     setDireccionError("");
                                                 }}
-                                                placeholder="Ej. Calle 45 # 78 - 32, Apto 301"
+                                                placeholder="Ejemplo: Calle 123 #45-67, Bogotá"
                                                 className={direccionError ? "input-has-error" : ""}
                                             />
                                         </div>
@@ -705,8 +704,8 @@ function Checkout() {
                                     </div>
                                 </div>
 
-                                {/* FILA 3: Barrio, Código postal, Ubicación mapa */}
-                                <div className="checkout-form-row three-cols">
+                                {/* FILA 3: Barrio y Código postal */}
+                                <div className="checkout-form-row">
                                     <div className="checkout-field-group">
                                         <label htmlFor="shipping-barrio">
                                             <Building size={13} />
@@ -739,23 +738,6 @@ function Checkout() {
                                                 placeholder="Ej. 050034"
                                             />
                                         </div>
-                                    </div>
-
-                                    <div className="checkout-field-group">
-                                        <label>
-                                            <Compass size={13} />
-                                            Ubicación en el mapa (opcional)
-                                        </label>
-                                        <button
-                                            type="button"
-                                            className="checkout-map-btn"
-                                            onClick={() => {
-                                                alert("Ubicación por GPS configurada automáticamente para " + ciudad);
-                                            }}
-                                        >
-                                            <MapPin size={15} />
-                                            Seleccionar ubicación
-                                        </button>
                                     </div>
                                 </div>
                             </div>

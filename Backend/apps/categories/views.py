@@ -105,6 +105,17 @@ class CategoriaView(APIView):
             validated
         )
 
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Creación de categoría",
+                elemento=categoria.nombre,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="categoria",
+            )
+        except Exception:
+            pass
+
         return Response(
             CategoriaSerializer(
                 categoria
@@ -178,6 +189,17 @@ class CategoriaDetalleView(APIView):
             validated
         )
 
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Edición de categoría",
+                elemento=categoria.nombre,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="categoria",
+            )
+        except Exception:
+            pass
+
         return Response(
             CategoriaSerializer(
                 categoria
@@ -188,14 +210,25 @@ class CategoriaDetalleView(APIView):
         categoria = get_object_or_404(Categoria, id_categoria=id)
 
         confirmacion = request.data.get("confirmacion_nombre")
-        if confirmacion != categoria.nombre:
+        if confirmacion and confirmacion != categoria.nombre:
             return Response(
-                {"detail": f"El nombre '{confirmacion}' no coincide exactamente con '{categoria.nombre}'."},
+                {"detail": f"El nombre '{confirmacion}' no coincide con '{categoria.nombre}'."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        nombre_cat = categoria.nombre
         try:
             CategoriaService.eliminar_fisico(id)
+            try:
+                from apps.users.activity import registrar_actividad
+                registrar_actividad(
+                    accion="Eliminación de categoría",
+                    elemento=nombre_cat,
+                    usuario=request.user if request.user.is_authenticated else None,
+                    tipo_accion="categoria",
+                )
+            except Exception:
+                pass
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_409_CONFLICT)
@@ -215,6 +248,16 @@ class CategoriaArchivarView(APIView):
     def post(self, request, id):
         cascade = str(request.query_params.get("cascade", "")).lower() in ("true", "1", "yes")
         categoria = CategoriaService.archivar(id)
+        try:
+            from apps.users.activity import registrar_actividad
+            registrar_actividad(
+                accion="Archivo de categoría",
+                elemento=categoria.nombre,
+                usuario=request.user if request.user.is_authenticated else None,
+                tipo_accion="categoria",
+            )
+        except Exception:
+            pass
 
         if not cascade:
             return Response(

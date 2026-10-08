@@ -190,8 +190,6 @@ function AdminLogin() {
 
                     </form>
 
-                    <a href="#" className="mv-login-forgot">¿Olvidaste tu contraseña?</a>
-
                     {/* SEPARADOR */}
                     <div className="mv-login-divider">
                         <span />

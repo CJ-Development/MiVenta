@@ -30,8 +30,8 @@ function Nosotros() {
         <main className="mv-nosotros-page">
 
             <SEO
-                title="Nosotros — miVenta.co"
-                description="Conoce miVenta.co, tu tienda online de confianza en Colombia."
+                title="Nosotros — VentasYa"
+                description="Conoce VentasYa, tu tienda online de confianza en Colombia."
                 path="/nosotros"
             />
 
@@ -39,9 +39,9 @@ function Nosotros() {
             <section className="mv-nosotros-hero">
                 <h1>Nosotros</h1>
                 <p>
-                    Más que una tienda, somos tu aliado en cada compra. En miVenta.co conectamos
-                    vendedores y compradores, facilitando el acceso a productos de calidad, con envíos
-                    seguros y un servicio confiable.
+                    Más que una tienda, somos tu aliado en cada compra. En VentasYa conectamos
+                    a nuestros clientes con productos de calidad, facilitando compras rápidas,
+                    envíos seguros y un servicio confiable en todo el país.
                 </p>
             </section>
 
@@ -52,19 +52,18 @@ function Nosotros() {
                         <span className="mv-nosotros-label">CONÓCENOS</span>
                         <h2 className="mv-nosotros-title">¿Quiénes somos?</h2>
                         <p className="mv-nosotros-text">
-                            miVenta.co es una tienda virtual colombiana creada para ofrecer una experiencia
-                            de compra fácil, segura y cercana, poniendo a disposición de nuestros clientes
-                            una variedad de productos para diferentes gustos, necesidades y momentos.
+                            VentasYa es una tienda virtual colombiana diseñada para ofrecer una experiencia
+                            de compra ágil, segura y confiable, poniendo a disposición de nuestros clientes
+                            una cuidada selección de productos para cubrir sus necesidades diarias.
                         </p>
                         <p className="mv-nosotros-text">
-                            Creemos que comprar en línea debe ser mucho más que elegir un producto: debe
-                            ser una experiencia práctica, confiable y agradable. Por eso trabajamos para
-                            seleccionar productos de calidad, ofrecer una atención personalizada y
-                            facilitar cada etapa del proceso, desde la elección hasta la entrega.
+                            Creemos que comprar en línea debe ser un proceso simple y transparente. Por eso
+                            priorizamos la calidad en cada artículo, una atención oportuna y cercana, y
+                            canales de compra accesibles que garantizan confianza de principio a fin.
                         </p>
                         <p className="mv-nosotros-text">
-                            Realizamos envíos a nivel nacional, buscando llegar cada día a más hogares de
-                            Colombia y brindar a nuestros clientes la confianza de comprar desde cualquier lugar.
+                            Realizamos envíos a nivel nacional, llevando productos directamente hasta la puerta
+                            de tu hogar con las principales transportadoras de Colombia.
                         </p>
                     </div>
 
@@ -72,15 +71,13 @@ function Nosotros() {
                         <span className="mv-nosotros-label">NUESTRO PROPÓSITO</span>
                         <h2 className="mv-nosotros-title">Misión</h2>
                         <p className="mv-nosotros-text">
-                            En miVenta.co tenemos como misión ofrecer a nuestros clientes una experiencia
-                            de compra virtual fácil, segura, confiable y cercana, poniendo a su alcance
-                            productos seleccionados que respondan a diferentes necesidades, gustos y
-                            estilos de vida.
+                            En VentasYa tenemos la misión de facilitar las compras en línea a través de una
+                            plataforma confiable, intuitiva y cercana, brindando productos de calidad a precios
+                            competitivos con respaldo garantizado.
                         </p>
                         <p className="mv-nosotros-text">
-                            Nos comprometemos a brindar atención amable y personalizada, procesos de
-                            compra sencillos, información clara y entregas eficientes a nivel nacional,
-                            construyendo relaciones basadas en la confianza y la satisfacción.
+                            Nos dedicamos a asegurar entregas puntuales, brindar una atención al cliente atenta
+                            y construir relaciones duraderas fundamentadas en la satisfacción de cada compra.
                         </p>
                     </div>
                 </div>
@@ -111,16 +108,13 @@ function Nosotros() {
                         <span className="mv-nosotros-label">HACIA DÓNDE VAMOS</span>
                         <h2 className="mv-nosotros-title">Visión</h2>
                         <p className="mv-nosotros-text">
-                            Para el año 2030, miVenta.co será reconocida como una tienda virtual colombiana
-                            confiable, cercana e innovadora, con cobertura nacional y una amplia variedad
-                            de productos, destacándose por la calidad de su servicio y la responsabilidad
-                            en cada entrega.
+                            Para el año 2030, VentasYa se consolidará como una tienda virtual referente en
+                            Colombia, reconocida por su eficiencia logística, variedad de productos y
+                            excelencia en el servicio al cliente.
                         </p>
                         <p className="mv-nosotros-text">
-                            Buscamos crecer de manera sostenible, fortalecer nuestra presencia en el
-                            comercio electrónico y construir una comunidad de clientes que encuentren en
-                            miVenta.co un lugar donde comprar sea fácil, seguro y siempre una experiencia
-                            especial.
+                            Avanzamos con paso firme hacia una experiencia digital moderna que simplifique el
+                            comercio electrónico para miles de familias y usuarios en cada rincón del país.
                         </p>
                     </div>
 
@@ -138,7 +132,7 @@ function Nosotros() {
                             2030
                         </span>
                         <p style={{ fontFamily: 'var(--font-body)', color: 'rgba(255,255,255,0.8)', fontSize: 16, lineHeight: 1.65, margin: 0 }}>
-                            Crecer, innovar y seguir creando experiencias especiales para miles de colombianos.
+                            Crecer, innovar y conectar a más colombianos con compras seguras, rápidas y garantizadas.
                         </p>
                     </div>
                 </div>
@@ -148,8 +142,8 @@ function Nosotros() {
             <section className="mv-nosotros-closing">
                 <div className="mv-nosotros-closing-line" />
                 <p>
-                    Gracias por ser parte de{" "}
-                    <strong>miVenta.co</strong>.
+                    Gracias por confiar en{" "}
+                    <strong>VentasYa</strong>.
                 </p>
                 <span>Elegir • Comprar • Disfrutar</span>
             </section>

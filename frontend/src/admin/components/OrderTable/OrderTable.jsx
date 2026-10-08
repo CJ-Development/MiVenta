@@ -206,7 +206,6 @@ function OrderTable({
     const [activeCardFilter, setActiveCardFilter] = useState("all");
     const [busqueda, setBusqueda] = useState("");
     const [filtroEstado, setFiltroEstado] = useState("");
-    const [filtroMetodoPago, setFiltroMetodoPago] = useState("");
     const [filtroRangoFecha, setFiltroRangoFecha] = useState("");
 
     // Selección múltiple
@@ -298,15 +297,6 @@ function OrderTable({
                 if (filtroEstado === "cancelado" && estadoNorm !== "cancelado") return false;
             }
 
-            // Filtro por método de pago
-            if (filtroMetodoPago) {
-                const infoMetodo = obtenerInfoMetodoPago(pedido);
-                const metodoCompleto = `${infoMetodo.titulo} ${infoMetodo.subtitulo}`.toLowerCase();
-                if (!metodoCompleto.includes(filtroMetodoPago.toLowerCase())) {
-                    return false;
-                }
-            }
-
             // Filtro por rango de fechas
             if (filtroRangoFecha && pedido.fecha_compra) {
                 const fechaPedido = new Date(pedido.fecha_compra);
@@ -368,7 +358,6 @@ function OrderTable({
         pedidos,
         activeCardFilter,
         filtroEstado,
-        filtroMetodoPago,
         filtroRangoFecha,
         busqueda
     ]);
@@ -380,7 +369,6 @@ function OrderTable({
         activeCardFilter,
         busqueda,
         filtroEstado,
-        filtroMetodoPago,
         filtroRangoFecha
     ]);
 
@@ -429,7 +417,6 @@ function OrderTable({
         setActiveCardFilter("all");
         setBusqueda("");
         setFiltroEstado("");
-        setFiltroMetodoPago("");
         setFiltroRangoFecha("");
     };
 
@@ -437,7 +424,6 @@ function OrderTable({
         activeCardFilter !== "all" ||
         busqueda.trim() !== "" ||
         filtroEstado !== "" ||
-        filtroMetodoPago !== "" ||
         filtroRangoFecha !== "";
 
     // Guardar nuevo estado de un pedido
@@ -703,21 +689,7 @@ function OrderTable({
                             </select>
                         </div>
 
-                        {/* 2. Selector de Métodos de Pago */}
-                        <div className="filter-select-wrapper">
-                            <select
-                                value={filtroMetodoPago}
-                                onChange={(e) => setFiltroMetodoPago(e.target.value)}
-                            >
-                                <option value="">Todos los métodos de pago</option>
-                                <option value="tarjeta">Tarjeta de crédito</option>
-                                <option value="transferencia">Transferencia bancaria</option>
-                                <option value="efectivo">Efectivo contra entrega</option>
-                                <option value="whatsapp">WhatsApp</option>
-                            </select>
-                        </div>
-
-                        {/* 3. Selector Rango de Fechas */}
+                        {/* 2. Selector Rango de Fechas */}
                         <div className="filter-select-wrapper select-date-range">
                             <Calendar size={16} className="date-icon" />
                             <select

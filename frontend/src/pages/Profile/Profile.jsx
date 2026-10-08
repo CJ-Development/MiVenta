@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useNotification } from "../../components/Notifications/NotificationProvider";
 import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
+import SEO from "../../components/SEO/SEO";
 
 import {
     updateMyProfile,
@@ -824,6 +825,12 @@ function Profile() {
 
     return (
         <main className="profile-page">
+            <SEO
+                title="Mi Cuenta"
+                description="Gestiona tu información de perfil, direcciones y pedidos en MiVenta."
+                path="/perfil"
+                noindex={true}
+            />
             <div className="profile-container">
                 <Breadcrumb items={[{ label: "Mi cuenta" }]} />
             </div>
@@ -847,7 +854,7 @@ function Profile() {
                                 <BadgeCheck size={15} />
                                 Cliente verificado
                             </span>
-                            <small>Miembro de Baúl Mágico Shop</small>
+                            <small>Miembro de MiVenta</small>
                         </div>
                     </div>
                 </div>

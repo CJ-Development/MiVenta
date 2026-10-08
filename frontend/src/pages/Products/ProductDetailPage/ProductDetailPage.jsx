@@ -101,6 +101,11 @@ function ProductDetailPage() {
     if (error || productId === null) {
         return (
             <main className="product-detail">
+                <SEO
+                    title="Producto no encontrado | MiVenta"
+                    description="El producto que buscas no está disponible en MiVenta."
+                    noindex={true}
+                />
                 <div className="product-detail-wrapper">
                     <Breadcrumb items={[{ label: "Producto no encontrado" }]} />
                     <div className="product-detail-state">
