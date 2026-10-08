@@ -1,439 +1,407 @@
-import { useState, useMemo, useCallback } from "react";
-import { Search, ArrowLeft, X, Folder, FolderOpen, ChevronRight, ChevronDown, Check } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import {
+    Package,
+    Folder,
+    FolderOpen,
+    ChevronDown,
+    ChevronRight,
+    Search,
+    Check,
+    X,
+    Layers,
+} from "lucide-react";
 import "./CategorySelector.css";
 
+/**
+ * CategorySelector
+ * Selector de categoría padre con diseño idéntico al selector de categorías de Producto Simple:
+ * trigger morado moderno, árbol jerárquico expandible con carpetas e insignias, buscador en tiempo real
+ * y opción "Ninguna — categoría principal".
+ */
 function CategorySelector({
-    categories,
+    categories = [],
     value,
     onChange,
     excludeId = null,
-    disabled = false
+    disabled = false,
 }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [currentPath, setCurrentPath] = useState([]);
-    const [viewMode, setViewMode] = useState("tree"); // "tree" or "search"
+    const [search, setSearch] = useState("");
+    const containerRef = useRef(null);
 
-    // =====================================================
-    // FUNCIONES AUXILIARES (useCallback para estabilidad)
-    // =====================================================
+    // Cerrar al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) {
+                setIsOpen(false);
+            }
+        };
 
-    // Construir ruta completa de una categoría
-    const buildPath = useCallback((category) => {
-        const path = [];
-        let current = category;
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen]);
 
-        while (current) {
-            path.unshift(current);
-            const parentId = current.id_categoria_padre ?? current.categoria_padre?.id_categoria ?? current.categoria_padre;
-            current = categories.find(cat => Number(cat.id_categoria) === Number(parentId));
+    // Helper para obtener ID de categoría padre
+    const getParentId = (cat) => {
+        if (!cat) return null;
+        return (
+            cat.id_categoria_padre ??
+            cat.categoria_padre?.id_categoria ??
+            cat.categoria_padre_id ??
+            cat.categoria_padre
+        );
+    };
+
+    // Filtrar categorías excluidas (la categoría actual y todos sus descendientes para evitar ciclos)
+    const availableCategories = useMemo(() => {
+        if (!excludeId) return categories || [];
+
+        const targetId = Number(excludeId);
+        const excludedSet = new Set([targetId]);
+        let addedNew = true;
+
+        while (addedNew) {
+            addedNew = false;
+            (categories || []).forEach((cat) => {
+                const id = Number(cat.id_categoria);
+                if (!excludedSet.has(id)) {
+                    const pId = getParentId(cat);
+                    if (pId && excludedSet.has(Number(pId))) {
+                        excludedSet.add(id);
+                        addedNew = true;
+                    }
+                }
+            });
         }
 
-        return path;
-    }, [categories]);
+        return (categories || []).filter(
+            (cat) => !excludedSet.has(Number(cat.id_categoria))
+        );
+    }, [categories, excludeId]);
 
-    // Obtener hijos de una categoría
-    const getChildren = useCallback((parentId) => {
-        return categories.filter(cat => {
-            const parent = cat.id_categoria_padre ?? cat.categoria_padre?.id_categoria ?? cat.categoria_padre;
-            return Number(parent) === Number(parentId);
+    // Estructurar árbol de categorías
+    const { rootCategories, categoryMap, childrenMap } = useMemo(() => {
+        const catMap = new Map();
+        const chMap = new Map();
+        const roots = [];
+
+        availableCategories.forEach((cat) => {
+            const id = Number(cat.id_categoria);
+            catMap.set(id, cat);
         });
-    }, [categories]);
 
-    // Verificar si una categoría es descendiente de otra (prevención de ciclos)
-    const isDescendant = useCallback((potentialParent, potentialChild) => {
-        if (!potentialParent || !potentialChild) return false;
-        if (Number(potentialParent.id_categoria) === Number(potentialChild.id_categoria)) return true;
+        availableCategories.forEach((cat) => {
+            const id = Number(cat.id_categoria);
+            const pId = getParentId(cat);
+            if (!pId || !catMap.has(Number(pId))) {
+                roots.push(cat);
+            } else {
+                const parentKey = Number(pId);
+                if (!chMap.has(parentKey)) {
+                    chMap.set(parentKey, []);
+                }
+                chMap.get(parentKey).push(cat);
+            }
+        });
 
-        let current = potentialChild;
+        return { rootCategories: roots, categoryMap: catMap, childrenMap: chMap };
+    }, [availableCategories]);
+
+    // Estado de carpetas expandidas (por defecto expandidas para ver toda la jerarquía)
+    const [expandedIds, setExpandedIds] = useState(() => new Set());
+
+    useEffect(() => {
+        if (rootCategories.length > 0) {
+            setExpandedIds(new Set(rootCategories.map((c) => Number(c.id_categoria))));
+        }
+    }, [rootCategories]);
+
+    const toggleExpand = (catId, e) => {
+        e.stopPropagation();
+        setExpandedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(catId)) {
+                next.delete(catId);
+            } else {
+                next.add(catId);
+            }
+            return next;
+        });
+    };
+
+    // ID de categoría seleccionada actualmente (null = categoría principal)
+    const selectedId = useMemo(() => {
+        if (value === null || value === undefined || value === "") return null;
+        return Number(value);
+    }, [value]);
+
+    // Construir breadcrumb / ruta jerárquica
+    const getFullPath = (catId) => {
+        if (!catId) return "";
+        const parts = [];
+        let curr = categoryMap.get(Number(catId));
         const visited = new Set();
 
-        while (current) {
-            const parentId = current.id_categoria_padre ?? current.categoria_padre?.id_categoria ?? current.categoria_padre;
-            if (!parentId) break;
-
-            if (Number(parentId) === Number(potentialParent.id_categoria)) return true;
-
-            if (visited.has(parentId)) {
-                // Ciclo detectado en los datos existentes
-                break;
-            }
-            visited.add(parentId);
-
-            current = categories.find(c => Number(c.id_categoria) === Number(parentId));
+        while (curr && !visited.has(Number(curr.id_categoria))) {
+            visited.add(Number(curr.id_categoria));
+            parts.unshift(curr.nombre);
+            const pId = getParentId(curr);
+            curr = pId ? categoryMap.get(Number(pId)) : null;
         }
 
-        return false;
-    }, [categories]);
+        return parts.join(" > ");
+    };
 
-    // Calcular nivel de una categoría (1-6)
-    const getLevel = useCallback((category) => {
-        if (!category) return 0;
-        const path = buildPath(category);
-        const level = path.length;
-        return Math.min(level, 6); // Máximo 6 niveles
-    }, [buildPath]);
+    const selectedCategory = selectedId ? categoryMap.get(selectedId) : null;
+    const selectedText = selectedCategory
+        ? getFullPath(selectedId)
+        : "Ninguna — categoría principal";
 
-    // =====================================================
-    // HOOKS useMemo (que dependen de las funciones anteriores)
-    // =====================================================
+    // Filtrado por búsqueda en tiempo real
+    const searchFilteredList = useMemo(() => {
+        const query = (search || "").trim().toLowerCase();
+        if (!query) return null;
 
-    // Obtener categoría seleccionada
-    const selectedCategory = useMemo(() => {
-        if (!value) return null;
-        return categories.find(cat => Number(cat.id_categoria) === Number(value));
-    }, [categories, value]);
-
-    // Obtener categorías principales (nivel 1)
-    const rootCategories = useMemo(() => {
-        return categories.filter(cat => {
-            const parent = cat.id_categoria_padre ?? cat.categoria_padre?.id_categoria ?? cat.categoria_padre;
-            return !parent;
+        return availableCategories.filter((cat) => {
+            const path = getFullPath(cat.id_categoria).toLowerCase();
+            return path.includes(query);
         });
-    }, [categories]);
+    }, [availableCategories, search, categoryMap]);
 
-    // Filtrar categorías excluyendo la actual (para edición)
-    const filterExcluded = (cats) => {
-        if (!excludeId) return cats;
-        return cats.filter(cat => Number(cat.id_categoria) !== Number(excludeId));
+    const handleSelect = (cat) => {
+        if (disabled) return;
+        const id = cat ? Number(cat.id_categoria) : null;
+        if (onChange) {
+            onChange(id);
+        }
+        setIsOpen(false);
+        setSearch("");
     };
 
-    // Obtener categorías en el nivel actual
-    const currentCategories = useMemo(() => {
-        let cats;
-        if (currentPath.length === 0) {
-            // Recalcular rootCategories directamente para evitar dependencia circular
-            cats = categories.filter(cat => {
-                const parent = cat.id_categoria_padre ?? cat.categoria_padre?.id_categoria ?? cat.categoria_padre;
-                return !parent;
-            });
-        } else {
-            const currentParent = currentPath[currentPath.length - 1];
-            cats = getChildren(currentParent.id_categoria);
-        }
-
-        // Filtrar categorías excluidas y sus descendientes
-        return cats.filter(cat => {
-            // Excluir la categoría que se está editando
-            if (excludeId && Number(cat.id_categoria) === Number(excludeId)) return false;
-
-            // Excluir descendientes de la categoría que se está editando (prevención de ciclos)
-            if (excludeId) {
-                const editingCategory = categories.find(c => Number(c.id_categoria) === Number(excludeId));
-                if (editingCategory && isDescendant(editingCategory, cat)) return false;
-            }
-
-            return true;
-        });
-    }, [categories, currentPath, excludeId, getChildren, isDescendant]);
-
-    // Búsqueda: coincide solo con el nombre de la categoría (no sus hijos)
-    // Si buscas "Accesorios" → ves "Accesorios", no sus subcategorías
-    // Si buscas "Ropa" → ves todas las categorías cuyo nombre contenga "Ropa"
-    const searchResults = useMemo(() => {
-        if (!searchQuery.trim()) return [];
-
-        const query = searchQuery.toLowerCase().trim();
-
-        return categories.filter(cat => {
-            // Excluir la categoría que se está editando
-            if (excludeId && Number(cat.id_categoria) === Number(excludeId)) return false;
-
-            // Excluir descendientes de la categoría que se está editando (prevención de ciclos)
-            if (excludeId) {
-                const editingCategory = categories.find(c => Number(c.id_categoria) === Number(excludeId));
-                if (editingCategory && isDescendant(editingCategory, cat)) return false;
-            }
-
-            // Buscar SOLO por el nombre de esta categoría (no su ruta)
-            return cat.nombre.toLowerCase().includes(query);
-        }).map(cat => ({
-            category: cat,
-            path: buildPath(cat)
-        }));
-    }, [categories, searchQuery, excludeId, isDescendant, buildPath]);
-
-    // Navegar a una categoría
-    const navigateTo = useCallback((category) => {
-        const path = buildPath(category);
-        setCurrentPath(path);
-        setViewMode("tree");
-    }, [buildPath]);
-
-    // Ir atrás
-    const goBack = () => {
-        if (currentPath.length > 0) {
-            setCurrentPath(currentPath.slice(0, -1));
+    const handleClear = (e) => {
+        e.stopPropagation();
+        if (disabled) return;
+        if (onChange) {
+            onChange(null);
         }
     };
-
-    // Seleccionar categoría
-    const selectCategory = (category) => {
-        onChange(category.id_categoria);
-        setIsOpen(false);
-        setSearchQuery("");
-        setCurrentPath([]);
-        setViewMode("tree");
-    };
-
-    // Limpiar selección
-    const clearSelection = () => {
-        onChange("");
-        setIsOpen(false);
-        setSearchQuery("");
-        setCurrentPath([]);
-        setViewMode("tree");
-    };
-
-    // Obtener ruta de texto
-    const getRouteText = (path) => {
-        return path.map(cat => cat.nombre).join(" > ");
-    };
-
-    // Calcular nivel resultante
-    const resultLevel = selectedCategory ? getLevel(selectedCategory) + 1 : 1;
-    
-    const getLevelText = (lvl) => {
-        if (lvl === 1) return "Categoría principal";
-        if (lvl === 2) return "Subcategoría";
-        if (lvl === 3) return "Sub-subcategoría";
-        if (lvl === 4) return "Nivel 4";
-        if (lvl === 5) return "Nivel 5";
-        if (lvl === 6) return "Nivel 6";
-        return `Nivel ${lvl}`;
-    };
-
-    const levelText = getLevelText(resultLevel);
-
-    // Verificar si excede nivel 6
-    const exceedsMaxLevel = resultLevel > 6;
 
     return (
-        <div className="category-selector">
-            <label>
-                Categoría padre
-            </label>
+        <div className="category-selector-wrapper" ref={containerRef}>
+            <label className="category-selector-label">Categoría padre</label>
 
-            {/* Selector visible */}
-            <div 
-                className={`category-selector-trigger ${isOpen ? 'open' : ''}`}
+            {/* TRIGGER BOX (IDÉNTICO A PRODUCTO SIMPLE) */}
+            <div
+                className={`category-selector-trigger ${isOpen ? "is-open" : ""} ${disabled ? "is-disabled" : ""}`}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
+                tabIndex={0}
+                role="button"
+                aria-haspopup="listbox"
+                aria-expanded={isOpen}
             >
-                {selectedCategory ? (
-                    <div className="category-selector-selected">
-                        <Folder size={16} />
-                        <span>{getRouteText(buildPath(selectedCategory))}</span>
+                <div className="category-selector-left-icon">
+                    <Package size={18} color="#94a3b8" />
+                </div>
+
+                <div
+                    className={`category-selector-content ${selectedCategory ? "is-selected" : "is-root"}`}
+                    title={selectedText}
+                >
+                    {selectedText}
+                </div>
+
+                <div className="category-selector-actions">
+                    {selectedCategory && (
                         <button
                             type="button"
-                            className="category-selector-clear"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                clearSelection();
-                            }}
+                            className="category-selector-clear-btn"
+                            title="Quitar categoría padre (establecer como principal)"
+                            onClick={handleClear}
                             disabled={disabled}
                         >
-                            <X size={14} />
+                            <X size={13} />
                         </button>
-                    </div>
-                ) : (
-                    <div className="category-selector-placeholder">
-                        Ninguna — categoría principal
-                    </div>
-                )}
-                <button
-                    type="button"
-                    className="category-selector-toggle"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (!disabled) setIsOpen(!isOpen);
-                    }}
-                    disabled={disabled}
-                >
-                    <ChevronDown size={16} />
-                </button>
+                    )}
+                    <ChevronDown
+                        size={18}
+                        color="#6a2ca0"
+                        style={{
+                            transform: isOpen ? "rotate(180deg)" : "none",
+                            transition: "transform 0.2s ease",
+                        }}
+                    />
+                </div>
             </div>
 
-            {/* Dropdown */}
+            {/* MENÚ DESPLEGABLE ESPACIOSO Y MODERNO */}
             {isOpen && (
                 <div className="category-selector-dropdown">
-                    {/* Búsqueda */}
-                    <div className="category-selector-search">
-                        <Search size={16} />
+                    {/* BUSCADOR INSTANTÁNEO */}
+                    <div className="category-selector-search-box">
+                        <Search size={16} color="#94a3b8" />
                         <input
                             type="text"
-                            placeholder="Buscar categoría..."
-                            value={searchQuery}
-                            onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                if (e.target.value.trim()) {
-                                    setViewMode("search");
-                                } else {
-                                    setViewMode("tree");
-                                }
-                            }}
+                            placeholder="Buscar categoría o subcategoría..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                             autoFocus
+                            onClick={(e) => e.stopPropagation()}
                         />
-                    </div>
-
-                    {/* Breadcrumbs */}
-                    {viewMode === "tree" && currentPath.length > 0 && (
-                        <div className="category-selector-breadcrumbs">
+                        {search && (
                             <button
                                 type="button"
-                                className="breadcrumb-back"
-                                onClick={goBack}
+                                className="category-selector-clear-btn"
+                                onClick={() => setSearch("")}
                             >
-                                <ArrowLeft size={14} />
-                                Volver
+                                <X size={12} />
                             </button>
-                            <div className="breadcrumb-path">
-                                {currentPath.map((cat, index) => (
-                                    <span key={cat.id_categoria}>
-                                        {index > 0 && <ChevronRight size={12} />}
-                                        {cat.nombre}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
-                    {/* Lista de categorías */}
-                    <div className="category-selector-list">
-                        {viewMode === "search" ? (
-                            // Resultados de búsqueda
-                            searchResults.length > 0 ? (
-                                searchResults.map(({ category, path }) => (
-                                    <div
-                                        key={category.id_categoria}
-                                        className={`category-selector-item ${Number(value) === Number(category.id_categoria) ? 'selected' : ''}`}
-                                        onClick={() => selectCategory(category)}
-                                    >
-                                        <Folder size={14} />
-                                        <div className="category-selector-item-content">
-                                            <span className="category-name">{category.nombre}</span>
-                                            <span className="category-path">{getRouteText(path)}</span>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="category-selector-empty">
-                                    No se encontraron categorías
+                    {/* LISTA / ÁRBOL DE CATEGORÍAS */}
+                    <div className="category-selector-tree-list">
+                        {/* OPCIÓN: NINGUNA - CATEGORÍA PRINCIPAL */}
+                        {!search && (
+                            <div
+                                className={`category-selector-none-row ${selectedId === null ? "is-active" : ""}`}
+                                onClick={() => handleSelect(null)}
+                            >
+                                <div className="category-selector-none-left">
+                                    <Layers
+                                        size={16}
+                                        color={selectedId === null ? "#6a2ca0" : "#64748b"}
+                                    />
+                                    <span>Ninguna — categoría principal</span>
                                 </div>
-                            )
-                        ) : (
-                            // Navegación por árbol
-                            currentPath.length === 0 ? (
-                                // Nivel 1
-                                currentCategories.map(cat => {
-                                    const children = getChildren(cat.id_categoria);
-                                    
+                                {selectedId === null && <Check size={16} color="#6a2ca0" />}
+                            </div>
+                        )}
+
+                        {searchFilteredList ? (
+                            /* MODO BÚSQUEDA FILTRADA */
+                            searchFilteredList.length === 0 ? (
+                                <div className="category-selector-empty-results">
+                                    No se encontraron categorías para "{search}"
+                                </div>
+                            ) : (
+                                searchFilteredList.map((cat) => {
+                                    const isSelected = Number(cat.id_categoria) === selectedId;
+                                    const fullPath = getFullPath(cat.id_categoria);
                                     return (
                                         <div
                                             key={cat.id_categoria}
-                                            className={`category-selector-item ${Number(value) === Number(cat.id_categoria) ? 'selected' : ''}`}
+                                            className={`category-selector-child-row ${isSelected ? "is-active" : ""}`}
+                                            onClick={() => handleSelect(cat)}
                                         >
-                                            <div className="category-selector-item-main">
-                                                <Folder size={14} />
-                                                <span>{cat.nombre}</span>
+                                            <div className="category-selector-child-left">
+                                                <Folder size={15} color={isSelected ? "#6a2ca0" : "#8b5cf6"} />
+                                                <span>{fullPath}</span>
                                             </div>
-                                            <div className="category-selector-item-actions">
-                                                <button
-                                                    type="button"
-                                                    className="category-select-btn"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        selectCategory(cat);
-                                                    }}
-                                                    title="Seleccionar como padre"
-                                                >
-                                                    <Check size={14} />
-                                                    Seleccionar
-                                                </button>
-                                                {children.length > 0 && (
-                                                    <button
-                                                        type="button"
-                                                        className="category-navigate-btn"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigateTo(cat);
-                                                        }}
-                                                        title="Ver subcategorías"
-                                                    >
-                                                        Ver hijos
-                                                        <ChevronRight size={14} />
-                                                    </button>
-                                                )}
-                                            </div>
+                                            {isSelected && <Check size={16} color="#6a2ca0" />}
                                         </div>
                                     );
                                 })
+                            )
+                        ) : (
+                            /* MODO ÁRBOL COMPLETO */
+                            rootCategories.length === 0 ? (
+                                <div className="category-selector-empty-results">
+                                    No hay otras categorías registradas
+                                </div>
                             ) : (
-                                // Niveles 2 y 3
-                                currentCategories.map(cat => {
-                                    const children = getChildren(cat.id_categoria);
-                                    const level = getLevel(cat);
-                                    
+                                rootCategories.map((root) => {
+                                    const rootId = Number(root.id_categoria);
+                                    const children = childrenMap.get(rootId) || [];
+                                    const isExpanded = expandedIds.has(rootId);
+                                    const isRootSelected = rootId === selectedId;
+
                                     return (
-                                        <div
-                                            key={cat.id_categoria}
-                                            className={`category-selector-item ${Number(value) === Number(cat.id_categoria) ? 'selected' : ''}`}
-                                        >
-                                            <div className="category-selector-item-main">
-                                                <Folder size={14} />
-                                                <span>{cat.nombre}</span>
+                                        <div key={rootId} className="category-selector-parent-group">
+                                            {/* FILA DE CATEGORÍA PADRE */}
+                                            <div
+                                                className={`category-selector-parent-row ${isRootSelected ? "is-active" : ""}`}
+                                                onClick={() => handleSelect(root)}
+                                            >
+                                                <div className="category-selector-parent-left">
+                                                    {children.length > 0 && (
+                                                        <button
+                                                            type="button"
+                                                            className="category-selector-expand-btn"
+                                                            onClick={(e) => toggleExpand(rootId, e)}
+                                                            title={isExpanded ? "Plegar" : "Desplegar"}
+                                                        >
+                                                            {isExpanded ? (
+                                                                <ChevronDown size={14} />
+                                                            ) : (
+                                                                <ChevronRight size={14} />
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                    <Folder
+                                                        size={16}
+                                                        color={isRootSelected ? "#6a2ca0" : "#7c3aed"}
+                                                    />
+                                                    <span className="category-selector-parent-name">{root.nombre}</span>
+                                                    {children.length > 0 && (
+                                                        <span className="category-selector-count-badge">
+                                                            {children.length}{" "}
+                                                            {children.length === 1 ? "subcategoría" : "subcategorías"}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {isRootSelected && <Check size={16} color="#6a2ca0" />}
                                             </div>
-                                            <div className="category-selector-item-actions">
-                                                <button
-                                                    type="button"
-                                                    className="category-select-btn"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        selectCategory(cat);
-                                                    }}
-                                                    title="Seleccionar como padre"
-                                                >
-                                                    <Check size={14} />
-                                                    Seleccionar
-                                                </button>
-                                                {children.length > 0 && level < 6 && (
-                                                    <button
-                                                        type="button"
-                                                        className="category-navigate-btn"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigateTo(cat);
-                                                        }}
-                                                        title="Ver subcategorías"
-                                                    >
-                                                        Ver hijos
-                                                        <ChevronRight size={14} />
-                                                    </button>
-                                                )}
-                                                {level >= 6 && (
-                                                    <span className="category-max-level-hint">
-                                                        Nivel máximo
-                                                    </span>
-                                                )}
-                                            </div>
+
+                                            {/* SUBCATEGORÍAS HIJAS EXPANDIDAS */}
+                                            {children.length > 0 && isExpanded && (
+                                                <div className="category-selector-children-list">
+                                                    {children.map((child) => {
+                                                        const childId = Number(child.id_categoria);
+                                                        const isChildSelected = childId === selectedId;
+
+                                                        return (
+                                                            <div
+                                                                key={childId}
+                                                                className={`category-selector-child-row ${isChildSelected ? "is-active" : ""}`}
+                                                                onClick={() => handleSelect(child)}
+                                                            >
+                                                                <div className="category-selector-child-left">
+                                                                    <span className="branch-icon">↳</span>
+                                                                    <FolderOpen
+                                                                        size={14}
+                                                                        color={isChildSelected ? "#6a2ca0" : "#a855f7"}
+                                                                    />
+                                                                    <span>{child.nombre}</span>
+                                                                </div>
+
+                                                                {isChildSelected && (
+                                                                    <Check size={15} color="#6a2ca0" />
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })
                             )
                         )}
                     </div>
-                </div>
-            )}
 
-            {/* Info de nivel */}
-            {selectedCategory && (
-                <div className={`category-selector-level ${exceedsMaxLevel ? 'error' : ''}`}>
-                    <span className="level-label">Nivel resultante:</span>
-                    <span className="level-value">{levelText}</span>
-                    {exceedsMaxLevel && (
-                        <span className="level-error">
-                            No se pueden crear categorías por debajo del sexto nivel.
+                    {/* PIE DEL SELECTOR */}
+                    <div className="category-selector-footer-info">
+                        <span>
+                            {availableCategories.length}{" "}
+                            {availableCategories.length === 1 ? "categoría en total" : "categorías en total"}
                         </span>
-                    )}
+                        <span>Selecciona una para asignar</span>
+                    </div>
                 </div>
             )}
         </div>
