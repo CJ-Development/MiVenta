@@ -58,7 +58,7 @@ function Footer() {
                         {/* FACEBOOK */}
                         <li className="icon-content">
                             <a
-                                href="https://www.facebook.com/MiVenta.co"
+                                href="https://www.facebook.com/share/1GgE6VtH9y/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Facebook de MiVenta.co"
