@@ -6,7 +6,7 @@ from apps.categories.models import Categoria
 # ==========================
 
 class Color(models.Model):
-
+    objects = models.Manager()
     id_color = models.AutoField(primary_key=True)
 
     nombre = models.CharField(
@@ -30,7 +30,7 @@ class Color(models.Model):
 # ==========================
 
 class Talla(models.Model):
-
+    objects = models.Manager()
     id_talla = models.AutoField(primary_key=True)
 
     nombre = models.CharField(
@@ -50,7 +50,7 @@ class Talla(models.Model):
 # ==========================
 
 class Diseño(models.Model):
-
+    objects = models.Manager()
     id_diseño = models.AutoField(primary_key=True)
 
     nombre = models.CharField(
@@ -88,6 +88,7 @@ class Producto(models.Model):
 
     ]
 
+    objects = models.Manager()
     id_producto = models.AutoField(primary_key=True)
 
     tiendanube_product_id = models.PositiveBigIntegerField(
@@ -164,7 +165,7 @@ class Producto(models.Model):
 # ==========================
 
 class Variante(models.Model):
-
+    objects = models.Manager()
     id_variante = models.AutoField(primary_key=True)
 
     tiendanube_variant_id = models.PositiveBigIntegerField(
@@ -243,7 +244,7 @@ class Variante(models.Model):
 # ==========================
 
 class ImagenProducto(models.Model):
-
+    objects = models.Manager()
     id_imagen = models.AutoField(primary_key=True)
 
     variante = models.ForeignKey(

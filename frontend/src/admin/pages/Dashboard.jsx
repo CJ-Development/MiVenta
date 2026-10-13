@@ -11,7 +11,6 @@ import {
     ArrowRight,
     ChevronRight,
     ChevronDown,
-    Package,
     AlertCircle,
     Loader2,
     Check,
@@ -91,6 +90,46 @@ const tiempoRelativo = (fecha) => {
     if (diffDias < 7) return `Hace ${diffDias} días`;
     return new Date(fecha).toLocaleDateString("es-CO", { day: "numeric", month: "short" });
 };
+
+// Órdenes ilustrativas para cuando no hay registros en la base de datos
+const MOCK_ORDERS = [
+    {
+        id_compra: 1,
+        referencia: "#MVC-00001",
+        nombre_cliente: "Test User",
+        total: 160000,
+        estado_compra: "pendiente",
+        fecha_compra: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+        imagen: null,
+    },
+    {
+        id_compra: 2,
+        referencia: "#MVC-00001",
+        nombre_cliente: "Andrea García",
+        total: 200000,
+        estado_compra: "completado",
+        fecha_compra: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+        imagen: null,
+    },
+    {
+        id_compra: 3,
+        referencia: "#MVC-00002",
+        nombre_cliente: "Carlos López",
+        total: 120000,
+        estado_compra: "en proceso",
+        fecha_compra: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+        imagen: null,
+    },
+    {
+        id_compra: 4,
+        referencia: "#MVC-00003",
+        nombre_cliente: "Laura Torres",
+        total: 85000,
+        estado_compra: "cancelado",
+        fecha_compra: new Date(Date.now() - 72 * 3600 * 1000).toISOString(),
+        imagen: null,
+    },
+];
 
 function Dashboard() {
     const navigate = useNavigate();
@@ -200,7 +239,7 @@ function Dashboard() {
                 pedidos: totalPedidosFinal,
                 usuarios: totalUsuariosFinal,
                 ventasMes: totalVentasFinal,
-                ultimosPedidos: compras.length > 0 ? compras.slice(0, 5) : mockOrders,
+                ultimosPedidos: compras.length > 0 ? compras.slice(0, 5) : MOCK_ORDERS,
                 pocoStock: pocoStock.data || [],
             });
         } catch (err) {
@@ -216,48 +255,8 @@ function Dashboard() {
         cargarDatos();
     }, []);
 
-    // Órdenes ilustrativas para cuando no hay registros en la base de datos
-    const mockOrders = [
-        {
-            id_compra: 1,
-            referencia: "#MVC-00001",
-            nombre_cliente: "Test User",
-            total: 160000,
-            estado_compra: "pendiente",
-            fecha_compra: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-            imagen: null,
-        },
-        {
-            id_compra: 2,
-            referencia: "#MVC-00001",
-            nombre_cliente: "Andrea García",
-            total: 200000,
-            estado_compra: "completado",
-            fecha_compra: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-            imagen: null,
-        },
-        {
-            id_compra: 3,
-            referencia: "#MVC-00002",
-            nombre_cliente: "Carlos López",
-            total: 120000,
-            estado_compra: "en proceso",
-            fecha_compra: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
-            imagen: null,
-        },
-        {
-            id_compra: 4,
-            referencia: "#MVC-00003",
-            nombre_cliente: "Laura Torres",
-            total: 85000,
-            estado_compra: "cancelado",
-            fecha_compra: new Date(Date.now() - 72 * 3600 * 1000).toISOString(),
-            imagen: null,
-        },
-    ];
-
     // Lista de órdenes base activas
-    const activeOrdersList = allOrders.length > 0 ? allOrders : mockOrders;
+    const activeOrdersList = allOrders.length > 0 ? allOrders : MOCK_ORDERS;
 
     // Etiqueta del filtro activo en el botón selector
     const getLabelFiltroFecha = () => {

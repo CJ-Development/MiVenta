@@ -14,7 +14,6 @@ import {
     Folder,
     FolderOpen,
     FolderTree,
-    FolderPlus,
     Package,
     EyeOff,
     Search,
@@ -44,11 +43,9 @@ function CategoryTable({ refreshKey, onEdit, onAddSubcategory }) {
     // Categorías expandidas
     const [expanded, setExpanded] = useState(new Set());
 
-    // Modal de eliminación en 2 pasos
+    // Modal de eliminación
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [deleteStep, setDeleteStep] = useState(1);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
-    const [deleteNameInput, setDeleteNameInput] = useState("");
 
     // Cargar categorías y productos
     const cargarDatos = async () => {
@@ -425,8 +422,6 @@ function CategoryTable({ refreshKey, onEdit, onAddSubcategory }) {
                             const isExpanded = expanded.has(cat.id_categoria);
                             const children = getChildren(cat.id_categoria);
                             const canExpand = children.length > 0;
-                            const directProducts = getCategoryDirectProducts(cat.id_categoria);
-                            const familyProducts = getFamilyProducts(cat);
 
                             return (
                                 <div key={cat.id_categoria} className="category-tree-block">

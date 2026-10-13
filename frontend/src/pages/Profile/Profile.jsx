@@ -749,14 +749,6 @@ function Profile() {
         logout();
     };
 
-    /* Cargar direcciones cuando la sección esté activa */
-    useEffect(() => {
-        if (selectedSection === "direcciones" && usuarioId) {
-            cargarDirecciones();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedSection, usuarioId]);
-
     const cargarDirecciones = async () => {
         try {
             setCargandoDirecciones(true);
@@ -769,6 +761,14 @@ function Profile() {
             setCargandoDirecciones(false);
         }
     };
+
+    /* Cargar direcciones cuando la sección esté activa */
+    useEffect(() => {
+        if (selectedSection === "direcciones" && usuarioId) {
+            cargarDirecciones();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedSection, usuarioId]);
 
     const handleEliminarDireccion = async (id) => {
         const ok = window.confirm("¿Eliminar esta dirección?");

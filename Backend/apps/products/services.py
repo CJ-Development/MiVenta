@@ -160,7 +160,7 @@ class ProductoService:
             recomendaciones = (
                 Producto.objects
                 .filter(
-                    categorias__id__in=categorias_ids,
+                    categorias__id_categoria__in=categorias_ids,
                     **filtros_categoria
                 )
                 .exclude(id_producto=id_producto)
@@ -408,248 +408,255 @@ class ProductoService:
                 pass
 
     @staticmethod
-    @transaction.atomic
     def guardar_completo(*, producto_data, variantes_data, archivos, producto_simple=False):
         # Lista de URLs de archivos nuevos escritos al disco.
         # Si la transacción falla (rollback), se borran para evitar huérfanos.
         uploaded_file_urls = []
 
-        # on_commit: borra los archivos nuevos que sí se persistieron
-        # cuando ya se confirmó la transacción (solo en éxito).
         try:
-            categorias_ids = producto_data.pop("categorias_ids", None)
-            producto_id = producto_data.pop("id_producto", None)
-
-            # Generar slug automáticamente desde el nombre
-            nombre = producto_data.get("nombre", "")
-            if nombre and not producto_data.get("slug"):
-                producto_data["slug"] = generar_slug_unico(nombre, producto_id)
-            elif not producto_data.get("slug"):
-                producto_data["slug"] = generar_slug_unico(nombre or "producto", producto_id)
-
-            # Persistir el tipo de producto (simple vs con variantes)
-            producto_data["producto_simple"] = producto_simple
-
-            if producto_id:
-                producto = Producto.objects.select_for_update().get(id_producto=producto_id)
-                for field, value in producto_data.items():
-                    setattr(producto, field, value)
-                producto.save()
-            else:
-                producto = Producto.objects.create(**producto_data)
-
-            if categorias_ids is not None:
-                producto.categorias.set(categorias_ids)
-                if categorias_ids and not producto.categoria_id:
-                    primera_cat = categorias_ids[0]
-                    cat_id = primera_cat.id_categoria if hasattr(primera_cat, 'id_categoria') else primera_cat
-                    Producto.objects.filter(id_producto=producto.id_producto).update(categoria_id=cat_id)
-
-            existing_variants = {v.id_variante: v for v in Variante.objects.filter(producto=producto)}
-            received_variant_ids = set()
-
-            if producto_simple and len(variantes_data) != 1:
-                raise ValueError("Un producto simple debe guardar una única variante interna.")
-
-            for variant_data in variantes_data:
-
-                variant_id = variant_data.pop("id_variante", None)
-
-                image_data = variant_data.pop("imagenes", []) or []
-
-                # Validar que al menos un atributo esté presente
-                # EXCEPTO para productos simples (variantes sin atributos)
-                color_id = variant_data.get("color_id")
-                diseño_id = variant_data.get("diseño_id")
-                talla_id = variant_data.get("talla_id")
-
-                # Un producto simple no expone atributos. La variante interna
-                # solo conserva el stock y las imágenes generales.
-                if not producto_simple and color_id is None and diseño_id is None and talla_id is None:
-                    raise ValueError(
-                        "Cada variante debe tener al menos un atributo: color, diseño o talla."
-                    )
-
-                # Generar SKU automático solo para variantes NUEVAS (sin id_variante)
-                # Para variantes existentes, conservar el SKU actual
-                sku = variant_data.get("sku")
-                if not sku or sku == "":
-                    if variant_id is None:  # Solo generar SKU para variantes nuevas
-                        variant_data["sku"] = generar_sku_unico(nombre)
-
-                existing_variant = (
-                    existing_variants.get(int(variant_id))
-                    if variant_id is not None
-                    else None
+            with transaction.atomic():
+                return ProductoService._ejecutar_guardar_completo(
+                    producto_data=producto_data,
+                    variantes_data=variantes_data,
+                    archivos=archivos,
+                    producto_simple=producto_simple,
+                    uploaded_file_urls=uploaded_file_urls,
                 )
-
-                # Si se proporcionó id_variante, esa es la identidad principal
-                # NO usar fallback por SKU cuando ya tenemos id_variante
-                if variant_id is not None:
-                    if existing_variant is None:
-                        raise ValueError(
-                            f"La variante con id {variant_id} no existe o no pertenece al producto."
-                        )
-                    if existing_variant.producto_id != producto.id_producto:
-                        raise ValueError(
-                            "Una de las variantes no pertenece al producto."
-                        )
-                else:
-                    # Fallbacks solo cuando NO hay id_variante (compatibilidad con payloads antiguos)
-                    if existing_variant is None and producto_simple:
-                        existing_variant = next(iter(existing_variants.values()), None)
-                    if existing_variant is None and variant_data.get("sku"):
-                        existing_variant = Variante.objects.filter(
-                            producto=producto,
-                            sku=variant_data["sku"],
-                        ).first()
-
-                variant_serializer = VarianteSerializer(
-                    existing_variant,
-                    data={
-                        **variant_data,
-                        "producto_id": producto.id_producto,
-                    },
-                    partial=existing_variant is not None,
-                    context={"allow_attribute_less": producto_simple},
-                )
-
-                variant_serializer.is_valid(raise_exception=True)
-
-                clean_variant = variant_serializer.validated_data
-
-                clean_variant.pop("producto", None)
-
-                if existing_variant:
-                    # Actualización segura usando .get() para partial updates
-                    existing_variant.color = clean_variant.get("color", existing_variant.color)
-                    existing_variant.diseño = clean_variant.get("diseño", existing_variant.diseño)
-                    existing_variant.talla = clean_variant.get("talla", existing_variant.talla)
-                    existing_variant.stock = clean_variant.get("stock", existing_variant.stock)
-                    # Solo actualizar SKU si cambió para evitar IntegrityError falso
-                    if "sku" in clean_variant and existing_variant.sku != clean_variant["sku"]:
-                        existing_variant.sku = clean_variant["sku"]
-                    try:
-                        existing_variant.save()
-                    except IntegrityError as e:
-                        if "sku" in str(e).lower():
-                            raise ValueError(f"Ya existe una variante con el SKU '{clean_variant.get('sku', existing_variant.sku)}'.")
-                        raise
-                    variant = existing_variant
-                else:
-                    try:
-                        variant = Variante.objects.create(producto=producto, **clean_variant)
-                    except IntegrityError as e:
-                        if "sku" in str(e).lower():
-                            raise ValueError(f"Ya existe una variante con el SKU '{clean_variant['sku']}'.")
-                        raise
-
-                received_variant_ids.add(variant.id_variante)
-                existing_images = {i.id_imagen: i for i in ImagenProducto.objects.filter(variante=variant)}
-                received_image_ids = set()
-
-                # Validar cantidad de videos y límite total
-                videos_count = 0
-                for item in image_data:
-                    file_k = item.get("file_key")
-                    up_f = archivos.get(file_k) if file_k else None
-                    val_url = (item.get("imagen") or "").strip().lower().split("?")[0]
-                    item_tipo = (item.get("tipo") or "").lower()
-                    is_video = (
-                        item_tipo == "video"
-                        or (up_f and os.path.splitext(up_f.name)[1].lower() in [".mp4", ".webm"])
-                        or val_url.endswith(".mp4")
-                        or val_url.endswith(".webm")
-                    )
-                    if is_video:
-                        videos_count += 1
-
-                if videos_count > 1:
-                    raise ValueError("Cada variante o producto puede tener como máximo 1 video.")
-
-                if len(image_data) > 9:
-                    raise ValueError("Cada variante puede tener como máximo 8 imágenes y 1 video.")
-
-                for image_index, image_item in enumerate(image_data, start=1):
-                    image_id = image_item.get("id_imagen")
-                    principal = bool(image_item.get("principal", image_index == 1))
-                    order = int(image_item.get("orden") or image_index)
-                    file_key = image_item.get("file_key")
-
-                    uploaded = archivos.get(file_key) if file_key else None
-                    tipo = (image_item.get("tipo") or "").lower()
-
-                    if uploaded:
-                        ext = os.path.splitext(uploaded.name)[1].lower()
-                        if ext in [".mp4", ".webm"]:
-                            tipo = "video"
-                            if uploaded.size > 15 * 1024 * 1024:
-                                raise ValueError(f"El video '{uploaded.name}' supera el tamaño máximo permitido de 15 MB.")
-                        elif not tipo:
-                            tipo = "imagen"
-                    else:
-                        clean_url = (image_item.get("imagen") or "").strip().lower().split("?")[0]
-                        if clean_url.endswith(".mp4") or clean_url.endswith(".webm"):
-                            tipo = "video"
-                        elif not tipo:
-                            tipo = "imagen"
-
-                    if tipo not in ["imagen", "video"]:
-                        tipo = "imagen"
-
-                    if image_id:
-                        image = existing_images.get(int(image_id))
-                        if not image or image.variante_id != variant.id_variante:
-                            raise ValueError("Una de las imágenes no pertenece a la variante.")
-                        image.principal = principal
-                        image.orden = order
-                        image.tipo = tipo
-                        image.save(update_fields=["principal", "orden", "tipo"])
-                        received_image_ids.add(image.id_imagen)
-                        continue
-
-                    if uploaded:
-                        image_url = ProductoService._save_uploaded_file(uploaded)
-                        uploaded_file_urls.append(image_url)
-                    else:
-                        image_url = image_item.get("imagen", "")
-
-                    if not image_url:
-                        raise ValueError("Cada imagen o video nuevo debe incluir un archivo o una URL.")
-
-                    image = ImagenProducto.objects.create(
-                        variante=variant,
-                        imagen=image_url,
-                        principal=principal,
-                        orden=order,
-                        tipo=tipo,
-                    )
-                    received_image_ids.add(image.id_imagen)
-
-                for old_image in existing_images.values():
-                    if old_image.id_imagen not in received_image_ids:
-                        ProductoService._delete_file_if_local(old_image)
-                        old_image.delete()
-
-                principal_images = ImagenProducto.objects.filter(variante=variant, principal=True).order_by("orden", "id_imagen")
-                first = principal_images.first()
-                if first:
-                    principal_images.exclude(id_imagen=first.id_imagen).update(principal=False)
-
-            for old_variant in existing_variants.values():
-                if old_variant.id_variante not in received_variant_ids:
-                    if hasattr(old_variant, 'detallecompra_set') and old_variant.detallecompra_set.exists():
-                        raise ValueError(
-                            f"No se puede eliminar la variante '{old_variant.sku}' porque tiene un historial de pedidos asociados. Por favor, mantén la variante en el producto."
-                        )
-                    for old_image in ImagenProducto.objects.filter(variante=old_variant):
-                        ProductoService._delete_file_if_local(old_image)
-                    old_variant.delete()
-
-            return ProductoService.obtener(producto.id_producto)
         except Exception:
             # Rollback de archivos: borra cualquier archivo que ya se haya
             # escrito al disco durante esta transacción antes del fallo.
             for url in uploaded_file_urls:
                 ProductoService._delete_file_by_url(url)
             raise
+
+    @staticmethod
+    def _ejecutar_guardar_completo(*, producto_data, variantes_data, archivos, producto_simple, uploaded_file_urls):
+        categorias_ids = producto_data.pop("categorias_ids", None)
+        producto_id = producto_data.pop("id_producto", None)
+
+        # Generar slug automáticamente desde el nombre
+        nombre = producto_data.get("nombre", "")
+        if nombre and not producto_data.get("slug"):
+            producto_data["slug"] = generar_slug_unico(nombre, producto_id)
+        elif not producto_data.get("slug"):
+            producto_data["slug"] = generar_slug_unico(nombre or "producto", producto_id)
+
+        # Persistir el tipo de producto (simple vs con variantes)
+        producto_data["producto_simple"] = producto_simple
+
+        if producto_id:
+            producto = Producto.objects.select_for_update().get(id_producto=producto_id)
+            for field, value in producto_data.items():
+                setattr(producto, field, value)
+            producto.save()
+        else:
+            producto = Producto.objects.create(**producto_data)
+
+        if categorias_ids is not None:
+            producto.categorias.set(categorias_ids)
+            if categorias_ids and not producto.categoria_id:
+                primera_cat = categorias_ids[0]
+                cat_id = primera_cat.id_categoria if hasattr(primera_cat, 'id_categoria') else primera_cat
+                Producto.objects.filter(id_producto=producto.id_producto).update(categoria_id=cat_id)
+
+        existing_variants = {v.id_variante: v for v in Variante.objects.filter(producto=producto)}
+        received_variant_ids = set()
+
+        if producto_simple and len(variantes_data) != 1:
+            raise ValueError("Un producto simple debe guardar una única variante interna.")
+
+        for variant_data in variantes_data:
+
+            variant_id = variant_data.pop("id_variante", None)
+
+            image_data = variant_data.pop("imagenes", []) or []
+
+            # Validar que al menos un atributo esté presente
+            # EXCEPTO para productos simples (variantes sin atributos)
+            color_id = variant_data.get("color_id")
+            diseño_id = variant_data.get("diseño_id")
+            talla_id = variant_data.get("talla_id")
+
+            # Un producto simple no expone atributos. La variante interna
+            # solo conserva el stock y las imágenes generales.
+            if not producto_simple and color_id is None and diseño_id is None and talla_id is None:
+                raise ValueError(
+                    "Cada variante debe tener al menos un atributo: color, diseño o talla."
+                )
+
+            # Generar SKU automático solo para variantes NUEVAS (sin id_variante)
+            # Para variantes existentes, conservar el SKU actual
+            sku = variant_data.get("sku")
+            if not sku or sku == "":
+                if variant_id is None:  # Solo generar SKU para variantes nuevas
+                    variant_data["sku"] = generar_sku_unico(nombre)
+
+            existing_variant = (
+                existing_variants.get(int(variant_id))
+                if variant_id is not None
+                else None
+            )
+
+            # Si se proporcionó id_variante, esa es la identidad principal
+            # NO usar fallback por SKU cuando ya tenemos id_variante
+            if variant_id is not None:
+                if existing_variant is None:
+                    raise ValueError(
+                        f"La variante con id {variant_id} no existe o no pertenece al producto."
+                    )
+                if existing_variant.producto_id != producto.id_producto:
+                    raise ValueError(
+                        "Una de las variantes no pertenece al producto."
+                    )
+            else:
+                # Fallbacks solo cuando NO hay id_variante (compatibilidad con payloads antiguos)
+                if existing_variant is None and producto_simple:
+                    existing_variant = next(iter(existing_variants.values()), None)
+                if existing_variant is None and variant_data.get("sku"):
+                    existing_variant = Variante.objects.filter(
+                        producto=producto,
+                        sku=variant_data["sku"],
+                    ).first()
+
+            variant_serializer = VarianteSerializer(
+                existing_variant,
+                data={
+                    **variant_data,
+                    "producto_id": producto.id_producto,
+                },
+                partial=existing_variant is not None,
+                context={"allow_attribute_less": producto_simple},
+            )
+
+            variant_serializer.is_valid(raise_exception=True)
+
+            clean_variant = dict(variant_serializer.validated_data) if isinstance(variant_serializer.validated_data, dict) else {}
+            clean_variant.pop("producto", None)
+
+            if existing_variant:
+                # Actualización segura usando .get() para partial updates
+                existing_variant.color = clean_variant.get("color", existing_variant.color)
+                existing_variant.diseño = clean_variant.get("diseño", existing_variant.diseño)
+                existing_variant.talla = clean_variant.get("talla", existing_variant.talla)
+                existing_variant.stock = clean_variant.get("stock", existing_variant.stock)
+                # Solo actualizar SKU si cambió para evitar IntegrityError falso
+                if "sku" in clean_variant and existing_variant.sku != clean_variant["sku"]:
+                    existing_variant.sku = clean_variant["sku"]
+                try:
+                    existing_variant.save()
+                except IntegrityError as e:
+                    if "sku" in str(e).lower():
+                        raise ValueError(f"Ya existe una variante con el SKU '{clean_variant.get('sku', existing_variant.sku)}'.")
+                    raise
+                variant = existing_variant
+            else:
+                try:
+                    variant = Variante.objects.create(producto=producto, **clean_variant)
+                except IntegrityError as e:
+                    if "sku" in str(e).lower():
+                        raise ValueError(f"Ya existe una variante con el SKU '{clean_variant['sku']}'.")
+                    raise
+
+            received_variant_ids.add(variant.id_variante)
+            existing_images = {i.id_imagen: i for i in ImagenProducto.objects.filter(variante=variant)}
+            received_image_ids = set()
+
+            # Validar cantidad de videos y límite total
+            videos_count = 0
+            for item in image_data:
+                file_k = item.get("file_key")
+                up_f = archivos.get(file_k) if file_k else None
+                val_url = (item.get("imagen") or "").strip().lower().split("?")[0]
+                item_tipo = (item.get("tipo") or "").lower()
+                is_video = (
+                    item_tipo == "video"
+                    or (up_f and os.path.splitext(up_f.name)[1].lower() in [".mp4", ".webm"])
+                    or val_url.endswith(".mp4")
+                    or val_url.endswith(".webm")
+                )
+                if is_video:
+                    videos_count += 1
+
+            if videos_count > 1:
+                raise ValueError("Cada variante o producto puede tener como máximo 1 video.")
+
+            if len(image_data) > 9:
+                raise ValueError("Cada variante puede tener como máximo 8 imágenes y 1 video.")
+
+            for image_index, image_item in enumerate(image_data, start=1):
+                image_id = image_item.get("id_imagen")
+                principal = bool(image_item.get("principal", image_index == 1))
+                order = int(image_item.get("orden") or image_index)
+                file_key = image_item.get("file_key")
+
+                uploaded = archivos.get(file_key) if file_key else None
+                tipo = (image_item.get("tipo") or "").lower()
+
+                if uploaded:
+                    ext = os.path.splitext(uploaded.name)[1].lower()
+                    if ext in [".mp4", ".webm"]:
+                        tipo = "video"
+                        if uploaded.size > 15 * 1024 * 1024:
+                            raise ValueError(f"El video '{uploaded.name}' supera el tamaño máximo permitido de 15 MB.")
+                    elif not tipo:
+                        tipo = "imagen"
+                else:
+                    clean_url = (image_item.get("imagen") or "").strip().lower().split("?")[0]
+                    if clean_url.endswith(".mp4") or clean_url.endswith(".webm"):
+                        tipo = "video"
+                    elif not tipo:
+                        tipo = "imagen"
+
+                if tipo not in ["imagen", "video"]:
+                    tipo = "imagen"
+
+                if image_id:
+                    image = existing_images.get(int(image_id))
+                    if not image or image.variante_id != variant.id_variante:
+                        raise ValueError("Una de las imágenes no pertenece a la variante.")
+                    image.principal = principal
+                    image.orden = order
+                    image.tipo = tipo
+                    image.save(update_fields=["principal", "orden", "tipo"])
+                    received_image_ids.add(image.id_imagen)
+                    continue
+
+                if uploaded:
+                    image_url = ProductoService._save_uploaded_file(uploaded)
+                    uploaded_file_urls.append(image_url)
+                else:
+                    image_url = image_item.get("imagen", "")
+
+                if not image_url:
+                    raise ValueError("Cada imagen o video nuevo debe incluir un archivo o una URL.")
+
+                image = ImagenProducto.objects.create(
+                    variante=variant,
+                    imagen=image_url,
+                    principal=principal,
+                    orden=order,
+                    tipo=tipo,
+                )
+                received_image_ids.add(image.id_imagen)
+
+            for old_image in existing_images.values():
+                if old_image.id_imagen not in received_image_ids:
+                    ProductoService._delete_file_if_local(old_image)
+                    old_image.delete()
+
+            principal_images = ImagenProducto.objects.filter(variante=variant, principal=True).order_by("orden", "id_imagen")
+            first = principal_images.first()
+            if first:
+                principal_images.exclude(id_imagen=first.id_imagen).update(principal=False)
+
+        for old_variant in existing_variants.values():
+            if old_variant.id_variante not in received_variant_ids:
+                if hasattr(old_variant, 'detallecompra_set') and old_variant.detallecompra_set.exists():
+                    raise ValueError(
+                        f"No se puede eliminar la variante '{old_variant.sku}' porque tiene un historial de pedidos asociados. Por favor, mantén la variante en el producto."
+                    )
+                for old_image in ImagenProducto.objects.filter(variante=old_variant):
+                    ProductoService._delete_file_if_local(old_image)
+                old_variant.delete()
+
+        return ProductoService.obtener(producto.id_producto)

@@ -5,6 +5,7 @@ from apps.categories.models import Categoria
 
 
 class Oferta(models.Model):
+    objects = models.Manager()
 
     TIPO_DESCUENTO = [
         ("porcentaje", "Porcentaje"),

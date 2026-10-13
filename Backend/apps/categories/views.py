@@ -95,11 +95,11 @@ class CategoriaView(APIView):
         )
 
         validated = serializer.validated_data
-
-        validated.pop(
-            "categoria_padre",
-            None
-        )
+        if isinstance(validated, dict):
+            validated.pop(
+                "categoria_padre",
+                None
+            )
 
         categoria = CategoriaService.crear(
             validated
@@ -178,11 +178,11 @@ class CategoriaDetalleView(APIView):
         )
 
         validated = serializer.validated_data
-
-        validated.pop(
-            "categoria_padre",
-            None
-        )
+        if isinstance(validated, dict):
+            validated.pop(
+                "categoria_padre",
+                None
+            )
 
         categoria = CategoriaService.actualizar(
             id,

@@ -363,37 +363,30 @@ function CategoryForm({
                 }
 
                 const wouldCreateCycle = (ancestorId, potentialDescendantId) => {
-                    console.log(`[CYCLE CHECK] ancestorId: ${ancestorId}, potentialDescendantId: ${potentialDescendantId}`);
                     if (ancestorId === potentialDescendantId) return true;
 
                     let currentId = potentialDescendantId;
                     const visited = new Set();
 
                     while (currentId) {
-                        console.log(`[CYCLE CHECK] Loop - currentId: ${currentId}`);
                         if (visited.has(currentId)) break;
                         visited.add(currentId);
 
                         const currentCat = categorias.find(cat => Number(cat.id_categoria) === currentId);
                         if (!currentCat) {
-                            console.log(`[CYCLE CHECK] Not found currentCat for id: ${currentId}`);
                             break;
                         }
                         
                         let parentId = currentCat.id_categoria_padre ?? currentCat.categoria_padre?.id_categoria ?? currentCat.categoria_padre;
                         if (parentId && typeof parentId === 'object') parentId = parentId.id_categoria || null;
                         
-                        console.log(`[CYCLE CHECK] parentId found:`, parentId);
-                        
                         if (!parentId) break;
                         currentId = Number(parentId);
 
                         if (currentId === ancestorId) {
-                            console.log(`[CYCLE CHECK] Cycle detected! currentId equals ancestorId (${ancestorId})`);
                             return true;
                         }
                     }
-                    console.log(`[CYCLE CHECK] No cycle detected.`);
                     return false;
                 };
 

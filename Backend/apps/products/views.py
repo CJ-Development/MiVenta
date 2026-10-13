@@ -115,8 +115,9 @@ class ProductoCompletoView(APIView):
 
             archivos = {key: value for key, value in request.FILES.items()}
 
+            validated_dict = serializer.validated_data if isinstance(serializer.validated_data, dict) else {}
             producto = ProductoService.guardar_completo(
-                producto_data={**serializer.validated_data, "id_producto": producto_data.get("id_producto")},
+                producto_data={**validated_dict, "id_producto": producto_data.get("id_producto")},
                 variantes_data=variantes_data,
                 archivos=archivos,
                 producto_simple=producto_simple,
@@ -447,7 +448,8 @@ class VariantesPorProductoView(APIView):
         serializer = VarianteSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         variante = serializer.save()
-        variante.refresh_from_db()
+        if isinstance(variante, Variante):
+            variante.refresh_from_db()
         return Response(VarianteSerializer(variante).data, status=status.HTTP_201_CREATED)
 
 

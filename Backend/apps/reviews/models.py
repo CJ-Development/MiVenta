@@ -52,7 +52,7 @@ class Resena(models.Model):
         unique_together = ("compra", "producto")
         constraints = [
             models.CheckConstraint(
-                check=models.Q(calificacion__gte=1) & models.Q(calificacion__lte=5),
+                condition=models.Q(calificacion__gte=1) & models.Q(calificacion__lte=5),
                 name="calificacion_rango_valido"
             )
         ]

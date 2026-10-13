@@ -6,9 +6,7 @@ from apps.categories.serializers import CategoriaSerializer
 from apps.categories.models import Categoria
 
 import os
-import uuid
 
-from django.conf import settings
 
 
 class ColorSerializer(serializers.ModelSerializer):

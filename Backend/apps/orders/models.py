@@ -21,6 +21,7 @@ class MetodoPago(models.Model):
 
 
 class Compra(models.Model):
+    objects = models.Manager()
 
     ESTADOS = [
 
@@ -97,7 +98,7 @@ class Compra(models.Model):
 
 
 class DetalleCompra(models.Model):
-
+    objects = models.Manager()
     id_detalle = models.AutoField(primary_key=True)
 
     compra = models.ForeignKey(

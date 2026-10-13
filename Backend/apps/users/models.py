@@ -112,6 +112,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
 
 class Direccion(models.Model):
+    objects = models.Manager()
 
     id_direccion = models.AutoField(
         primary_key=True
@@ -154,6 +155,7 @@ class Direccion(models.Model):
 
 
 class Actividad(models.Model):
+    objects = models.Manager()
     id_actividad = models.AutoField(primary_key=True)
     accion = models.CharField(max_length=200)
     elemento = models.CharField(max_length=255)

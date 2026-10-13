@@ -4,7 +4,7 @@ from django.utils.text import slugify
 
 
 class Categoria(models.Model):
-
+    objects = models.Manager()
     id_categoria = models.AutoField(primary_key=True)
 
     tiendanube_category_id = models.PositiveBigIntegerField(
